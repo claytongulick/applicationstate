@@ -1,3 +1,4 @@
+
 "use strict";
 /**
  * This class maintains the overall application state in a platform-agnostic way.
@@ -7,7 +8,6 @@
  * a simple call to undo(name)
  *
  * @author Clay Gulick
- * 
  */
 class ApplicationState {
 
@@ -107,6 +107,7 @@ class ApplicationState {
         //TODO: check to see if we're assigning to leaf or subobject of an immutable object and fail if so --ccg
         var names = path.split('.');
         var key = names.pop();
+
         ApplicationState._ensurePath(path, object);
         var obj = ApplicationState._resolvePath(names,object);
         if(!(typeof obj == 'object')) return;
@@ -149,6 +150,7 @@ class ApplicationState {
      */
     static rm(target, object) {
         object = object || ApplicationState._state;
+        let original_path = target; //save this for notifications
         if(target === 'app')
             return;
         if(!target)
@@ -171,32 +173,51 @@ class ApplicationState {
         }
 
         function referredTo(target) {
-            return !!(ApplicationState._reverse_symlinks[target]);
+            return !!(ApplicationState._reverse_symlinks && ApplicationState._reverse_symlinks[target]);
         }
 
         //first, check to see if this is a symlink. If so, just remove it from the symlink trackers
         if(isSymlink(target))
             return removeSymlink(target);
 
-        if(referredTo(target))
+        if(referredTo(target)) {
             ApplicationState._reverse_symlinks[target]
                 .forEach(
                     (symlink) => {
                         removeSymlink(target, true);
                     }
                 );
-        delete ApplicationState._reverse_symlinks[target];
+            delete ApplicationState._reverse_symlinks[target];
+        }
 
         let parts = target.split('.');
-        let leaf = parts.slice(-1);
-        //strip off 'app' and the leaf
-        parts = parts.slice(1,-1);
+        let leaf = parts.slice(-1)[0];
+        //strip off the leaf
+        parts = parts.slice(0,-1);
         for(let i=0; i < parts.length; i++) {
             object = object[parts[i]];
             if (typeof object === 'undefined')
                 throw new Error('Undefined target in ApplicationState.rm: ' + target);
         }
         delete object[leaf];
+
+        let options = ApplicationState._options[original_path];
+        if(!options)
+        options = {
+            //trigger notifications?
+            notify: true,
+            //a specific list of paths to exclude from being notified
+            exclude_notification_paths: [],
+            //a list of specific listener keys that should not be notified of changes
+            exclude_notification_listeners: [],
+            //is this a changeable object?
+            immutable: false,
+            //should this value be persisted?
+            persist: true,
+            //do we want to maintain previous state?
+            save_previous: true
+        };
+        ApplicationState.notify(original_path, false, options);
 
     }
 
@@ -212,8 +233,6 @@ class ApplicationState {
      * @private
      */
     static _dereferencePath(path) {
-        if(path == 'app')
-            return path;
         if(!ApplicationState._symlinks)
             return path;
 
@@ -313,11 +332,41 @@ class ApplicationState {
 
             names = path.split('.');
         }
-        else
+        else {
             names = path;
+            if(!names.length)
+                return object;
+        }
         for(let i=0; i < names.length; i++) {
             object = object[names[i]];
             if(typeof object === 'undefined') return undefined;
+            if(object === null) return null;
+        }
+
+        //return literal values
+        if (!(typeof object === 'object')) return object;
+
+        //check to see if this looks like an array. If so, convert it
+        let keys = Object.keys(object);
+        if(!keys.length) {
+            //this is a blank object, return it
+            return object;
+        }
+        let looks_like_array = true;
+        let converted_array;
+        for(let i=0; i<keys.length; i++) {
+            if(isNaN(keys[i])) {
+                looks_like_array = false;
+                break;
+            }
+        }
+        if(looks_like_array) {
+            converted_array = [];
+
+            for (let i = 0; i < keys.length; i++) {
+                converted_array[parseInt(keys[i])] = object[keys[i]];
+            }
+            return converted_array;
         }
         return object;
     }
@@ -436,6 +485,7 @@ class ApplicationState {
         function notifyDown(name) {
             var obj = ApplicationState._resolvePath(name);
             if(!obj) return;
+            if(Array.isArray(obj)) return;
             if(!(typeof obj === 'object')) return;
             var keys = Object.keys(obj);
             keys.forEach(
@@ -515,3 +565,4 @@ ApplicationState._listenerKey = 0;
 ApplicationState._options = {};
 
 export default ApplicationState;
+
