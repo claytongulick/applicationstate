@@ -1,7 +1,7 @@
-# applicationstate
+# ApplicationState
 Utility for maintaining stateful applications
 
-##About
+## About
 ApplicationState, as it's name implies, is used for maintaining state in applications. It is a different approach to solving the classic problem, and is language agnostic though this implementation is in JavaScript.
 
 Over the years many patterns have emerged in software architecture - all trying to solve the same fundamental problem: maintain state, and react to changes in state.
@@ -62,35 +62,35 @@ This is a brief summary of the ApplicationState theory, there is a lot more to i
 
  Once the above features are implemented, many applications will be able to full implemented "serverless"
 
-##Usage
+## Usage
 
 The API for Application is very simple, there is currently no constructor everything is implemented statically:
 
-###ApplicationState.get(name)
+### ApplicationState.get(name)
 Return the value at the given path
 
-###ApplicationState.set(name, value)
+### ApplicationState.set(name, value)
 Set the value at the specified path
 
-###ApplicationState.listen(name, callback)
+### ApplicationState.listen(name, callback)
 Listen for changes at the specified path, invoking the callback with the new and old values. Callback should be of the form:
     (new_value, old_value) => { ... }
 A listener key will be returned, it can be used later to remove the listener, if needed.
 
-###ApplicationState.removeListener(name, key)
+### ApplicationState.removeListener(name, key)
 Remove the listener at the specified path with the given key
 
-###ApplicationState.ln(target, link_path)
+### ApplicationState.ln(target, link_path)
 This is similar the the unix "ln" symlink functionality. It is used to link a node to another area in the graph. The linked node can be used interchangably with the original. Listeners will be notified on both the original path and the symlinked path.
 
-###ApplicationState.rm(name)
+### ApplicationState.rm(name)
 Delete the specified path. If the target is a symlink, only the symlink will be removed.
 If a node pointed to by a symlink is deleted, the symlink will also be deleted.
 
-###ApplicationState.notify(name, explicit, options)
+### ApplicationState.notify(name, explicit, options)
 Used to trigger a listener. If explicit is set to true, only a listener that is directly pointing at the specified node will be triggered, hierarchical listeners will not. The options parameter is reserved for use by plugin authors and carries information such as whether the changed value should be persisted.
 
-##ApplicationState.undo(name)
+### ApplicationState.undo(name)
 Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
 child names and undo any changes below it. So, for example, if you were to call undo('app')  and 'app' was the top
 level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...
