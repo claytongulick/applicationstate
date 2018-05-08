@@ -21,7 +21,8 @@ Here's a simple example. Imagine an application that has a simple login form, a 
 
 Here's a rough graph of what the overall state of that application might look like:
 
-TODO: insert diagram
+![graph diagram](./docs/state_graph.png "State Graph Example")
+
 
 In the above graph, the root node is "app", with a leaf called "location" and three child nodes, "user","screen" and "current_job".
 
