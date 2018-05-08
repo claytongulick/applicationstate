@@ -38,7 +38,7 @@ With application state, this is how you both set and retrieve values.
 
 At this point, it's natural to wonder what value this approach takes above a simple object that can be represented in any language. That brings us to the second part of the ApplicationState theory, which is responding to changes.
 
-Imagine that you need to validate that a username is valid after a user has entered it. Using ApplicationState, you'd add a listener to app.screen.login.username to be notified of the change, run the validation and mutute the UI in response.
+Imagine that you need to validate that a username is valid after a user has entered it. Using ApplicationState, you'd add a listener to app.screen.login.username to be notified of the change, run the validation and mutate the UI in response.
 
 Followers of reactive application flow will be very familiar with this approach. One of the advantages to the ApplicationState approach, however, is the ability to add a listener to any node or leaf in the graph and to be notified of changes that have occurred in the subgraph.
 
@@ -46,7 +46,7 @@ For example, maybe your application would like to keep a log of all changes that
 
 The key architectural insight of ApplicationState is that ALL of your UI state is represented by the graph and can be instantly stored and retrieved. This is particularly useful, for example, in mobile applications where the application can be killed and restarted at any time, and the expectation is that state will be restored properly.
 
-In the BARE architecture repo, there is an example of an application that uses stage components to listen to the node at app.location and sets the UI state based on the value of that node.
+In the [BARE architecture repo](https://github.com/claytongulick/BARE), there is documentation about how ApplicationState can fit into an overall reactive architecture, though it should be noted that ApplicationState is *not* limited to [BARE](https://github.com/claytongulick/BARE) and can be used easily with React, React Native, etc...
 
 This is a brief summary of the ApplicationState theory, there is a lot more to it with tons of handy featues like:
 
