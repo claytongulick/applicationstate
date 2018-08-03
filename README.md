@@ -97,3 +97,18 @@ child names and undo any changes below it. So, for example, if you were to call 
 level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...
 
 If there is no previous state for the specified value, it will be set to undefined.
+
+## Running Tests
+Since this module is designed for the browser and designed to be run as a module, we use the webpack to create a testing environment run in the browser.  This is accomplished through [webpack-serve](https://github.com/webpack-contrib/webpack-serve).  Follow these steps to get it running.
+
+```
+// install development dependencies
+npm install
+
+// run the webpack server and open the tests in default browser
+npm test
+
+// stop the server with ctrl-c
+```
+
+Unlike most approaches to testing, the webpack-server keeps going.  This enables you to update both the library and unit tests and see instant updates durring development.  Of course the down side to that is you need to put in the momentous effort to `ctrl-c` to stop the server once you are done.
