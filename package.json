@@ -4,7 +4,8 @@
   "description": "Utility for maintaining state in an application",
   "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "build": "webpack ./src/application_state.js --output-filename application_state.js"
   },
   "repository": {
     "type": "git",

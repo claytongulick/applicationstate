@@ -1,1 +1,3 @@
-module.exports = require('./src/application_state');
+import ApplicationState from './src/application_state';
+
+export default ApplicationState;
