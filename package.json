@@ -1,11 +1,12 @@
 {
   "name": "applicationstate",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Utility for maintaining state in an application",
   "main": "index.js",
   "scripts": {
-    "test": "test",
-    "build": "webpack ./src/application_state.js --output-filename application_state.js"
+    "pretest": "node_modules/.bin/webpack-serve ./test/webpack.config.js --open --port=8957",
+    "test": "echo \"Open up the test.html file in your browser.\"",
+    "build": "node_modules/.bin/webpack ./src/application_state.js --output-filename application_state.js"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,13 @@
   "bugs": {
     "url": "https://github.com/claytongulick/applicationstate/issues"
   },
-  "homepage": "https://github.com/claytongulick/applicationstate#readme"
+  "homepage": "https://github.com/claytongulick/applicationstate#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "jquery": "^3.3.1",
+    "mocha": "^5.2.0",
+    "webpack": "^4.16.4",
+    "webpack-cli": "^3.1.0",
+    "webpack-serve": "^2.0.2"
+  }
 }
