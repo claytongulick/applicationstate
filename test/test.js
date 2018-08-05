@@ -3,3 +3,6 @@ window.ApplicationState = ApplicationState;
 
 // tests
 import './basic';
+import './objects';
+import './arrays';
+import './flatten';

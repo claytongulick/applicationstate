@@ -111,7 +111,20 @@ class ApplicationState {
         ApplicationState._ensurePath(path, object);
         var obj = ApplicationState._resolvePath(names,object);
         if(!(typeof obj == 'object')) return;
-        return obj[key] = value;
+
+        // we are referencing an array
+        if(key[0] === '[') {
+            key = key.substring(1, key.length-1);
+            if(isNaN(key)) throw new Error('Array syntax for non numeric value');
+        }
+
+        if(obj instanceof Array) {
+            key = parseInt(key);
+        }
+
+        obj[key] = value;
+
+        return obj[key] === value;
     }
 
     /**
@@ -326,9 +339,11 @@ class ApplicationState {
     static _resolvePath(path,object) {
         var names;
         object = object || ApplicationState._state;
+
         if(typeof path == 'string') {
-            if(!(path.includes('.')))
+            if(!(path.includes('.'))) {
                 return object[path];
+            }
 
             names = path.split('.');
         }
@@ -337,8 +352,16 @@ class ApplicationState {
             if(!names.length)
                 return object;
         }
+
         for(let i=0; i < names.length; i++) {
-            object = object[names[i]];
+            let name = names[i];
+
+            if(name[0] === '[') {
+                name = name.substring(1, name.length-1);
+                if(isNaN(name)) throw new Error('Improperly formatted reference string: non-numeric array index or ')
+            }
+
+            object = object[name];
             if(typeof object === 'undefined') return undefined;
             if(object === null) return null;
         }
@@ -348,10 +371,12 @@ class ApplicationState {
 
         //check to see if this looks like an array. If so, convert it
         let keys = Object.keys(object);
-        if(!keys.length) {
-            //this is a blank object, return it
+        if(!keys.length || object instanceof Array) {
+            //this is a blank object, or it is already an array, return it.
             return object;
         }
+
+        /*
         let looks_like_array = true;
         let converted_array;
         for(let i=0; i<keys.length; i++) {
@@ -361,6 +386,7 @@ class ApplicationState {
             }
         }
         if(looks_like_array) {
+            console.log('we are converting an array here');
             converted_array = [];
 
             for (let i = 0; i < keys.length; i++) {
@@ -368,6 +394,7 @@ class ApplicationState {
             }
             return converted_array;
         }
+        */
         return object;
     }
 
@@ -555,6 +582,42 @@ class ApplicationState {
     static enable_notification() {
         ApplicationState._disable_notification = false;
     }
+    /**
+     * Convert an object to a 2d array, where each element is [key,value]. Key is the full dotted path.
+     * @param obj
+     * @param path
+     * @param flattened
+     * @return object object containing keys and values of the flattened object
+     */
+    static flatten(obj, path, flattened) {
+        if(!flattened) flattened = [];
+        if(!path) path = "";
+
+        // convert to a dotted path
+        let keys = Object.keys(obj);
+        let is_array = Array.isArray(obj);
+        for(let i=0; i<keys.length;i++) {
+            let value = obj[keys[i]];
+            let new_path;
+
+            if(is_array) {
+                new_path = path + (path ? ".[" + keys[i] + "]" : "");
+            } else {
+                new_path = path + (path ? "." : "") + keys[i];
+            }
+
+            if(value && (typeof value === 'object')) {
+                this.flatten(value, new_path, flattened);
+                continue;
+            }
+
+            value = JSON.stringify(value);
+            if(!value) value = JSON.stringify(null);
+            flattened.push({key: new_path, value: value});
+        }
+        
+        return flattened;
+    };
 }
 
 //my kingdom for static class property initializers. :-(
