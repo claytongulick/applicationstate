@@ -63,6 +63,31 @@ This is a brief summary of the ApplicationState theory, there is a lot more to i
 
  Once the above features are implemented, many applications will be able to full implemented "serverless"
 
+## Referencing and Dereferencing
+
+The means of getting and setting items within the state tree is accomplished via a dereferenced string.  Here are some examples:
+
+```javascript
+{ a: 1 } // key: 'a', value: '1'
+{ a: { b: 1 } } // key: 'a.b', value: '1'
+{ a: [ { b: 1 } ] } // key: 'a.[0].b', value: '1'
+```
+
+As you can see, the object hieracrhy is represented by variable names separated by either a `.` in the case of objects, or `.[#].` in the case of an array.
+
+These dereferenced strings can later be used to retrive a single value or a portion from within the state tree.  Consider the following:
+
+```javascript
+// the current state
+{ a: 1, b: "2", c: { c1: "3", c2: "4" } }
+
+const c = ApplicationState.get('c');
+// we get { c1: "3", c2: "4" }
+
+const c1 = ApplicationState.get('c.c1');
+// we get "3"
+```
+
 ## Usage
 
 The API for Application is very simple, there is currently no constructor everything is implemented statically:
