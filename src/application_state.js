@@ -22,6 +22,15 @@ class ApplicationState {
         return ApplicationState._resolvePath(name);
     }
 
+    static getOrSet(name, defaults, options) {
+        const value = ApplicationState.get(name);
+        if(value !== undefined) return value;
+
+        ApplicationState.set(name, defaults, options);
+
+        return ApplicationState.get(name);
+    }
+
     /**
      * Register a callback for listening to changes to the state.
      * @param name
