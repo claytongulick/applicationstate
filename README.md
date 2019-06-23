@@ -2,6 +2,125 @@
 Utility for maintaining stateful applications
 
 ## About
+ApplicationState is a simpler approach to state management. It is not opinionated, aims to be framework agnostic and has no external dependencies. There is a plugin system allowing state to be persised or otherwise processed.
+
+## Getting Started
+ApplicationState usage is intend to be simple and direct.
+
+### Getting and Setting
+ApplicationState is designed to store, retrive, and react to changes in state.  For example:
+
+```javascript
+ApplicationState.set("app.something", "something");
+const something = ApplicationState.get("app.something");
+console.log(something); // prints "something";
+```
+
+This seems to act like a key-value store, but it's a bit more than that.  For example:
+
+```javascript
+ApplicationState.set("app.something.nested", "nested");
+const something = ApplicationState.get("app.something");
+console.log(something); // prints { something: "nested" }
+```
+
+As you can see, ApplicationState takes care of referencing and de-referencing the state graph.  You can create a node in the graph using this method.  Note that prior to this, neither `something` nor `nested` existed on the state graph until we set it.  ApplicationState takes care of that for you.
+
+Lastly, you can connect two different parts of the state graph together using linking.
+
+```javascript
+ApplicationState.set("app.something.nested", "nested");
+ApplicationState.ln("app.something.nested", "app.a_link");
+const something = ApplicationState.get("app.a_link");
+console.log(something); // prints "nested"
+
+ApplicationState.set("app.a_link", "changed");
+const changed = ApplicationState.get("app.something.nested");
+console.log(changed); // prints "changed"
+```
+
+Notice that in the above example, you can change the original or the linked item and the value for both is changed.  It works a lot like the linux `ln` command.
+
+### Reacting to Changes
+Keeping state is great, but many times you need a means to know when the state has changed.  ApplicationState provides branch level notifications rather than just node level. This means that if anything changes within a child node of the state graph, all of it's parent elements will also get a notification, all the way up to the top level node.  A perfect example of another system that works this way is the DOM.
+
+Here's an example of a few listeners.
+
+```javascript
+ApplicationState.set("app.parent.child_one", "rebelious");
+ApplicationState.set("app.parent.child_two", "obedient");
+
+// Child level listener
+ApplicationState.listen("app.parent.child_one", (new_value, old_value) => {
+    console.log("child level", new_value, old_value);
+});
+
+// Parent level listener
+ApplicationStaate.listen("app.parent", (new_value, old_value) => {
+    console.log("parent_level", new_value, old_value);
+});
+
+ApplicationState.set("app.parent.child_one", "reformed");
+// The parent level listener will print "child_level", "reformed", "rebelious"
+// The child level listener will print
+//    "parent_level",
+//    { child_one: "reformed", child_two: "obedient" },
+//    { child_one: "rebelious", child_two: " obedient" }
+```
+
+The implications of being able to watch a branch rather than a node are significant.  It allows an application to react to changes on multiple levels with relative ease.
+
+Removing listeners is a simple process, but requires you save the reference to the listener.
+
+```javascript
+const listener_id = ApplicationState.listen("app.something.nested", () => {});
+ApplicationState.removeListener(listener_id);
+```
+
+#### Notifications and Arrays
+A notible exception to this is arrays in JavaScript. Under the hood ApplicationState uses getters and setters to do it's notifications.  Since array elements don't support getters and setters, this means any changes inside the array will probably not trigger a listener.  This goes for primitives and objects within arrays.
+
+In the future we are considering implementing Proxy as a means to handle this use-case. However, since we highly value backward compatiblity with older browsers that is currently on hold.
+
+## Available Plugins
+At this time, the only plugin available is for the browser using indexedDB.  Find it here [applicationstate-plugin-indexeddb](https://github.com/claytongulick/applicationstate-plugin-indexeddb).  Feel free to contact us if you have published any plugins, we will consider listing them here.
+
+## Usage
+
+The API for Application is very simple, there is currently no constructor everything is implemented statically:
+
+### ApplicationState.get(name)
+Return the value at the given path
+
+### ApplicationState.set(name, value)
+Set the value at the specified path
+
+### ApplicationState.listen(name, callback)
+Listen for changes at the specified path, invoking the callback with the new and old values. Callback should be of the form:
+    (new_value, old_value) => { ... }
+A listener key will be returned, it can be used later to remove the listener, if needed.
+
+### ApplicationState.removeListener(name, key)
+Remove the listener at the specified path with the given key
+
+### ApplicationState.ln(target, link_path)
+This is similar the the unix "ln" symlink functionality. It is used to link a node to another area in the graph. The linked node can be used interchangably with the original. Listeners will be notified on both the original path and the symlinked path.
+
+### ApplicationState.rm(name)
+Delete the specified path. If the target is a symlink, only the symlink will be removed.
+If a node pointed to by a symlink is deleted, the symlink will also be deleted.
+
+### ApplicationState.notify(name, explicit, options)
+Used to trigger a listener. If explicit is set to true, only a listener that is directly pointing at the specified node will be triggered, hierarchical listeners will not. The options parameter is reserved for use by plugin authors and carries information such as whether the changed value should be persisted.
+
+### ApplicationState.undo(name)
+Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
+child names and undo any changes below it. So, for example, if you were to call undo('app')  and 'app' was the top
+level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...
+
+If there is no previous state for the specified value, it will be set to undefined.
+
+## Theory and Design
 ApplicationState, as it's name implies, is used for maintaining state in applications. It is a different approach to solving the classic problem, and is language agnostic though this implementation is in JavaScript.
 
 Over the years many patterns have emerged in software architecture - all trying to solve the same fundamental problem: maintain state, and react to changes in state.
@@ -87,41 +206,6 @@ const c = ApplicationState.get('c');
 const c1 = ApplicationState.get('c.c1');
 // we get "3"
 ```
-
-## Usage
-
-The API for Application is very simple, there is currently no constructor everything is implemented statically:
-
-### ApplicationState.get(name)
-Return the value at the given path
-
-### ApplicationState.set(name, value)
-Set the value at the specified path
-
-### ApplicationState.listen(name, callback)
-Listen for changes at the specified path, invoking the callback with the new and old values. Callback should be of the form:
-    (new_value, old_value) => { ... }
-A listener key will be returned, it can be used later to remove the listener, if needed.
-
-### ApplicationState.removeListener(name, key)
-Remove the listener at the specified path with the given key
-
-### ApplicationState.ln(target, link_path)
-This is similar the the unix "ln" symlink functionality. It is used to link a node to another area in the graph. The linked node can be used interchangably with the original. Listeners will be notified on both the original path and the symlinked path.
-
-### ApplicationState.rm(name)
-Delete the specified path. If the target is a symlink, only the symlink will be removed.
-If a node pointed to by a symlink is deleted, the symlink will also be deleted.
-
-### ApplicationState.notify(name, explicit, options)
-Used to trigger a listener. If explicit is set to true, only a listener that is directly pointing at the specified node will be triggered, hierarchical listeners will not. The options parameter is reserved for use by plugin authors and carries information such as whether the changed value should be persisted.
-
-### ApplicationState.undo(name)
-Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
-child names and undo any changes below it. So, for example, if you were to call undo('app')  and 'app' was the top
-level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...
-
-If there is no previous state for the specified value, it will be set to undefined.
 
 ## Running Tests
 Since this module is designed for the browser and designed to be run as a module, we use the webpack to create a testing environment run in the browser.  This is accomplished through [webpack-serve](https://github.com/webpack-contrib/webpack-serve).  Follow these steps to get it running.
