@@ -1,4 +1,4 @@
-import StateLoader from './state_loader';
-import StatePersistence from './state_persistence';
+import StateLoader from './src/loader.js';
+import StatePersistence from './src/persistence.js';
 
-export {StateLoader, StatePersistence}
+export { StateLoader, StatePersistence }

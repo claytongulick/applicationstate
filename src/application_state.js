@@ -1,5 +1,3 @@
-
-"use strict";
 /**
  * This class maintains the overall application state in a platform-agnostic way.
  * Application states are key-value pairs, where the value is normally an object, but can be any serializable
