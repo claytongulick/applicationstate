@@ -16,13 +16,18 @@ class ApplicationState {
      */
     static get(name) {
         name = ApplicationState._dereferencePath(name);
-        //console.log("Application state get:" + name);
         return ApplicationState._resolvePath(name);
     }
 
+    /**
+     * Gets a specified path, or sets it with the default values if it's not present.
+     * @param {String} name The path to either get or set.
+     * @param {*} defaults The value to set if not present.
+     * @param {Object} options The options object to use for this path.
+     */
     static getOrSet(name, defaults, options) {
         const value = ApplicationState.get(name);
-        if(value !== undefined) return value;
+        if (value !== undefined) return value;
 
         ApplicationState.set(name, defaults, options);
 
@@ -33,9 +38,10 @@ class ApplicationState {
      * Register a callback for listening to changes to the state.
      * @param name
      * @param callback function Of the form callback(new_value, old_value) where value will be passed to the callback
+     * @returns {String} The listener key to pass back when removing the listener.
      */
     static listen(name, callback) {
-        if(!ApplicationState._listeners[name])
+        if (!ApplicationState._listeners[name])
             ApplicationState._listeners[name] = [];
         ApplicationState._listenerKey++;
         callback._listenerKey = ApplicationState._listenerKey;
@@ -49,13 +55,13 @@ class ApplicationState {
      * @param key
      */
     static removeListener(name, key) {
-        if(!ApplicationState._listeners[name]) return;
+        if (!ApplicationState._listeners[name]) return;
 
         //forEach here is a a touch wasteful, but just double checking that all listeners for the key are removed
         //though there should only ever be one
-        ApplicationState._listeners.forEach((listener,index) => {
-            if(listener._listenerKey == key) {
-                ApplicationState._listeners.splice(index,1);
+        ApplicationState._listeners.forEach((listener, index) => {
+            if (listener._listenerKey == key) {
+                ApplicationState._listeners.splice(index, 1);
             }
         })
     }
@@ -85,16 +91,16 @@ class ApplicationState {
             //do we want to maintain previous state?
             save_previous: true
         };
-        options = Object.assign(default_options,options);
+        options = Object.assign(default_options, options);
         ApplicationState._options[name] = options;
-        if(!ApplicationState._previousState[name] && options.save_previous)
+        if (!ApplicationState._previousState[name] && options.save_previous)
             ApplicationState._previousState[name] = [];
-        if(options.save_previous) {
+        if (options.save_previous) {
             let previous_value = ApplicationState._resolvePath(name);
             if (!(typeof previous_value === 'undefined'))
                 ApplicationState._previousState[name].push(previous_value);
         }
-        ApplicationState._assignValue(name,value);
+        ApplicationState._assignValue(name, value);
         ApplicationState.notify(name, false, options);
     }
 
@@ -109,29 +115,30 @@ class ApplicationState {
     static _assignValue(path, value, object) {
         object = object || ApplicationState._state;
 
-        if(path.indexOf('.') < 0)
-            return object[path] = value;
-        //TODO: check to see if we're assigning to leaf or subobject of an immutable object and fail if so --ccg
-        var names = path.split('.');
-        var key = names.pop();
+        const nodes = ApplicationState.walk(path);
 
-        ApplicationState._ensurePath(path, object);
-        var obj = ApplicationState._resolvePath(names,object);
-        if(!(typeof obj == 'object')) return;
-
-        // we are referencing an array
-        if(key[0] === '[') {
-            key = key.substring(1, key.length-1);
-            if(isNaN(key)) throw new Error('Array syntax for non numeric value');
+        for (let index = 0; index < nodes.length; index++) {
+            const node = nodes[index];
+            switch (node.type) {
+                case 'object':
+                    if (typeof object[node.name] === 'undefined') {
+                        object[node.name] = {};
+                    }
+                    object = object[node.name];
+                    break;
+                case 'array':
+                    if (typeof object[node.name] === 'undefined') {
+                        object[node.name] = [];
+                    }
+                    object = object[node.name];
+                    break;
+                case 'leaf':
+                    return object[node.name] = value;
+                    break;
+            }
         }
 
-        if(obj instanceof Array) {
-            key = parseInt(key);
-        }
-
-        obj[key] = value;
-
-        return obj[key] === value;
+        throw Error("We should have returned after setting the value.");
     }
 
     /**
@@ -141,21 +148,21 @@ class ApplicationState {
      * @param link_path string The path to the new symlink
      */
     static ln(target, link_path) {
-        if(!ApplicationState._symlinks)
+        if (!ApplicationState._symlinks)
             ApplicationState._symlinks = {};
         //this is an optimization to store backrefs from targeted nodes. It makes lookups for notifications fast
-        if(!ApplicationState._reverse_symlinks)
+        if (!ApplicationState._reverse_symlinks)
             ApplicationState._reverse_symlinks = {};
 
         target = ApplicationState._dereferencePath(target);
         let parts = link_path.split('.');
         let leaf = parts.slice(-1);
         //dereference the parent path so that its materialized.
-        let parent_path = ApplicationState._dereferencePath(parts.slice(0,-1).join('.'));
+        let parent_path = ApplicationState._dereferencePath(parts.slice(0, -1).join('.'));
         link_path = parent_path + '.' + leaf;
 
         ApplicationState._symlinks[link_path] = target;
-        if(!(ApplicationState._reverse_symlinks[target]))
+        if (!(ApplicationState._reverse_symlinks[target]))
             ApplicationState._reverse_symlinks[target] = [];
         //a node can be referred to by multiple symlinks, so we store an array
         ApplicationState._reverse_symlinks[target].push(link_path);
@@ -171,9 +178,9 @@ class ApplicationState {
     static rm(target, object) {
         object = object || ApplicationState._state;
         let original_path = target; //save this for notifications
-        if(target === 'app')
+        if (target === 'app')
             return;
-        if(!target)
+        if (!target)
             return;
 
         target = ApplicationState._materializePath(target);
@@ -182,7 +189,7 @@ class ApplicationState {
             let link_target = ApplicationState._symlinks[target];
             delete ApplicationState._symlinks[target];
 
-            if(!keep_referrers) {
+            if (!keep_referrers) {
                 let referrers = ApplicationState._reverse_symlinks[link_target];
                 referrers.splice(referrers.indexOf(target), 1);
             }
@@ -197,10 +204,10 @@ class ApplicationState {
         }
 
         //first, check to see if this is a symlink. If so, just remove it from the symlink trackers
-        if(isSymlink(target))
+        if (isSymlink(target))
             return removeSymlink(target);
 
-        if(referredTo(target)) {
+        if (referredTo(target)) {
             ApplicationState._reverse_symlinks[target]
                 .forEach(
                     (symlink) => {
@@ -213,8 +220,8 @@ class ApplicationState {
         let parts = target.split('.');
         let leaf = parts.slice(-1)[0];
         //strip off the leaf
-        parts = parts.slice(0,-1);
-        for(let i=0; i < parts.length; i++) {
+        parts = parts.slice(0, -1);
+        for (let i = 0; i < parts.length; i++) {
             object = object[parts[i]];
             if (typeof object === 'undefined')
                 throw new Error('Undefined target in ApplicationState.rm: ' + target);
@@ -222,21 +229,21 @@ class ApplicationState {
         delete object[leaf];
 
         let options = ApplicationState._options[original_path];
-        if(!options)
-        options = {
-            //trigger notifications?
-            notify: true,
-            //a specific list of paths to exclude from being notified
-            exclude_notification_paths: [],
-            //a list of specific listener keys that should not be notified of changes
-            exclude_notification_listeners: [],
-            //is this a changeable object?
-            immutable: false,
-            //should this value be persisted?
-            persist: true,
-            //do we want to maintain previous state?
-            save_previous: true
-        };
+        if (!options)
+            options = {
+                //trigger notifications?
+                notify: true,
+                //a specific list of paths to exclude from being notified
+                exclude_notification_paths: [],
+                //a list of specific listener keys that should not be notified of changes
+                exclude_notification_listeners: [],
+                //is this a changeable object?
+                immutable: false,
+                //should this value be persisted?
+                persist: true,
+                //do we want to maintain previous state?
+                save_previous: true
+            };
         ApplicationState.notify(original_path, false, options);
 
     }
@@ -253,19 +260,19 @@ class ApplicationState {
      * @private
      */
     static _dereferencePath(path) {
-        if(!ApplicationState._symlinks)
+        if (!ApplicationState._symlinks)
             return path;
 
-        let parts = path.split('.');
+        const nodes = ApplicationState.walk(path);
 
-        for(let i=0; i<parts.length; i++) {
-            let sub_path = parts.slice(0,i).join('.');
-            if(!(ApplicationState._symlinks[sub_path]))
-                continue;
-
-            path = ApplicationState._symlinks[sub_path] + '.' + parts.slice(i).join('.');
-            return ApplicationState._dereferencePath(path);
+        for (let index = 0; index < nodes.length; index++) {
+            const node = nodes[index];
+            if (ApplicationState._symlinks[node.path]) {
+                path = path.replace(node.path, ApplicationState._symlinks[node.path]);
+                return ApplicationState._dereferencePath(path);
+            }
         }
+
         return path;
     }
 
@@ -286,14 +293,14 @@ class ApplicationState {
      * @private
      */
     static _reverseSymlink(path) {
-        if(path.indexOf('.') < 0) return [];
+        if (path.indexOf('.') < 0) return [];
         let symlinks = [];
         let resolved_symlinks = [];
 
         function addParentSymlinks(path) {
             let parts = path.split('.');
             let leaf = parts.slice(-1);
-            let parent_path = parts.slice(0,-1).join('.');
+            let parent_path = parts.slice(0, -1).join('.');
             let parent_symlinks = ApplicationState._reverseSymlink(parent_path);
             parent_symlinks.forEach(
                 (symlink) => {
@@ -302,7 +309,7 @@ class ApplicationState {
             )
         }
 
-        if(ApplicationState._reverse_symlinks[path])
+        if (ApplicationState._reverse_symlinks[path])
             symlinks = ApplicationState._reverse_symlinks[path];
 
         symlinks.forEach(
@@ -333,7 +340,7 @@ class ApplicationState {
         let parts = path.split('.');
         let leaf = parts.slice(-1);
         //dereference the parent path so that its materialized.
-        let parent_path = ApplicationState._dereferencePath(parts.slice(0,-1).join('.'));
+        let parent_path = ApplicationState._dereferencePath(parts.slice(0, -1).join('.'));
         return parent_path + '.' + leaf;
     }
 
@@ -343,96 +350,20 @@ class ApplicationState {
      * @param object Object optional object that can be substituted for use instead of ApplicationState._state
      * @private
      */
-    static _resolvePath(path,object) {
-        var names;
+    static _resolvePath(path, object) {
+        if (typeof path !== 'string') throw Error("Requires a string, got an " + typeof path + " that " + Array.isArray(path) ? "is" : "isn't" + " an array");
+
         object = object || ApplicationState._state;
+        const nodes = ApplicationState.walk(path);
 
-        if(typeof path == 'string') {
-            if(!(path.includes('.'))) {
-                return object[path];
-            }
-
-            names = path.split('.');
-        }
-        else {
-            names = path;
-            if(!names.length)
-                return object;
+        for (let index = 0; index < nodes.length; index++) {
+            const node = nodes[index];
+            object = object[node.name];
+            if (typeof object === 'undefined') return undefined;
+            if (object === null) return null;
         }
 
-        for(let i=0; i < names.length; i++) {
-            let name = names[i];
-
-            if(name[0] === '[') {
-                name = name.substring(1, name.length-1);
-                if(isNaN(name)) throw new Error('Improperly formatted reference string: non-numeric array index or ')
-            }
-
-            object = object[name];
-            if(typeof object === 'undefined') return undefined;
-            if(object === null) return null;
-        }
-
-        //return literal values
-        if (!(typeof object === 'object')) return object;
-
-        //check to see if this looks like an array. If so, convert it
-        let keys = Object.keys(object);
-        if(!keys.length || object instanceof Array) {
-            //this is a blank object, or it is already an array, return it.
-            return object;
-        }
-
-        /*
-        let looks_like_array = true;
-        let converted_array;
-        for(let i=0; i<keys.length; i++) {
-            if(isNaN(keys[i])) {
-                looks_like_array = false;
-                break;
-            }
-        }
-        if(looks_like_array) {
-            console.log('we are converting an array here');
-            converted_array = [];
-
-            for (let i = 0; i < keys.length; i++) {
-                converted_array[parseInt(keys[i])] = object[keys[i]];
-            }
-            return converted_array;
-        }
-        */
         return object;
-    }
-
-    /**
-     * Internal utility function to ensure the specified object path is valid. If keys are missing, they'll be
-     * created
-     * @param path
-     * @param object Object optional object that can be substituted for use instead of ApplicationState._state
-     * @private
-     */
-    static _ensurePath(path, object) {
-        var names = path.split('.');
-        var obj = object || ApplicationState._state;
-        var i;
-        var parts;
-        var new_parts = [];
-
-        //check the sub paths, rewinding from the end
-        for(i=names.length - 1; i >= 0; i--) {
-            parts = names.slice(0,i);
-            obj = ApplicationState._resolvePath(parts, object);
-            if(obj) break;
-            new_parts.push(parts[parts.length - 1]);
-        }
-
-        //fast forward and create missing objects
-        while(new_parts.length) {
-            var new_part = new_parts.pop();
-            obj[new_part] = {};
-            obj=obj[new_part];
-        }
     }
 
     /**
@@ -441,7 +372,7 @@ class ApplicationState {
      * @param explicit Boolean indicate whether to notify up/down the hierarchy
      */
     static notify(name, explicit, options) {
-        if(ApplicationState._disable_notification) return;
+        if (ApplicationState._disable_notification) return;
 
         /**
          * Send the actual notification.
@@ -449,21 +380,20 @@ class ApplicationState {
          * @param listener
          * @param name the place in the hierachy that's triggering the send
          * @param modified_name the name of the hierarchical key that was actually modified, may be different than `name`
-         * @returns {*}
          */
-        function send(listener,name, modified_name) {
-            if(options.exclude_notification_listeners.includes(listener._listenerKey))
+        function send(listener, name, modified_name) {
+            if (options.exclude_notification_listeners.indexOf(listener._listenerKey) >= 0)
                 return;
 
             name = ApplicationState._dereferencePath(name);
-            if(ApplicationState._previousState[name])
+            if (ApplicationState._previousState[name])
                 return listener(
                     ApplicationState._resolvePath(name),
-                    ApplicationState._previousState[name][ApplicationState._previousState[name].length -1],
+                    ApplicationState._previousState[name][ApplicationState._previousState[name].length - 1],
                     modified_name
                 );
             //no previous state, set undefined
-            listener(ApplicationState._resolvePath(name),undefined,modified_name);
+            listener(ApplicationState._resolvePath(name), undefined, modified_name);
         }
 
         /**
@@ -471,7 +401,7 @@ class ApplicationState {
          * @param name
          */
         function notifySymlink(name) {
-            if(!ApplicationState._symlinks)
+            if (!ApplicationState._symlinks)
                 return;
 
             //if there's a symlink that refers to this path
@@ -479,11 +409,11 @@ class ApplicationState {
             //and there's a listener on that symlink, trigger that notification
             symlinks.forEach(
                 symlink => {
-                    if(!ApplicationState._listeners[symlink]) return;
-                    if(options.exclude_notification_paths.includes(symlink)) return;
+                    if (!ApplicationState._listeners[symlink]) return;
+                    if (options.exclude_notification_paths.indexOf(symlink) >= 0) return;
 
                     ApplicationState._listeners[symlink].forEach((listener) => {
-                        send(listener,symlink);
+                        send(listener, symlink);
                     });
                 }
             );
@@ -491,15 +421,15 @@ class ApplicationState {
 
         //notify listeners up the hierarchy
         function notifyUp(name) {
-            if(name.indexOf('.') < 0) return;
-            let names = name.split('.');
-            for(let i=names.length - 1; i > 0; i--) {
-                let new_name = names.slice(0,i).join('.');
-                notifySymlink(new_name);
-                if(!ApplicationState._listeners[new_name]) continue;
-                if(options.exclude_notification_paths.includes(new_name)) continue;
+            const nodes = ApplicationState.walk(name);
+            for (let index = 0; index < nodes.length; index++) {
+                const node = nodes[index];
+                if (node.type === "leaf") continue;
+                notifySymlink(node.path);
+                if (options.exclude_notification_paths.indexOf(node.path) >= 0) continue;
 
-                ApplicationState._listeners[new_name].forEach((listener) => send(listener,new_name,name));
+                if (ApplicationState._listeners[node.path])
+                    ApplicationState._listeners[node.path].forEach(listener => send(listener, node.path, name));
             }
         }
 
@@ -507,41 +437,55 @@ class ApplicationState {
         function notifyExplicit(name) {
             notifySymlink(name);
 
-            if(!ApplicationState._listeners[name]) return;
-            if(options.exclude_notification_paths.includes(name)) return;
+            if (!ApplicationState._listeners[name]) return;
+            if (options.exclude_notification_paths.indexOf(name) >= 0) return;
 
-            ApplicationState._listeners[name].forEach((listener) => {
-                send(listener,name);
-            });
+            ApplicationState._listeners[name].forEach(listener => send(listener, name));
         }
 
-        //recursively notify down the hierarchy
+        // recursively notify down the hierarchy
+        // This function doesn't just notify down the chain of the string name, it goes across all sub-objects and arrays.
         function notifyDown(name) {
-            var obj = ApplicationState._resolvePath(name);
-            if(!obj) return;
-            if(Array.isArray(obj)) return;
-            if(!(typeof obj === 'object')) return;
-            var keys = Object.keys(obj);
-            keys.forEach(
-                (key) => {
-                    var subname = name + "." + key;
+            const obj = ApplicationState._resolvePath(name);
+            if (!obj) return;
+            if (!(typeof obj === 'object')) return;
+
+            if (Array.isArray(obj)) {
+                const lngth = obj.length;
+                for (let index = 0; index < lngth; index++) {
+                    const subname = name + "[" + index + "]";
                     notifySymlink(subname);
-                    if(options.exclude_notification_paths.includes(subname))
+                    if (options.exclude_notification_paths.indexOf(subname) >= 0)
                         return notifyDown(subname);
 
-                    if(ApplicationState._listeners[subname])
-                        ApplicationState._listeners[subname].forEach((listener)=>send(listener,subname,name));
+                    if (ApplicationState._listeners[subname])
+                        ApplicationState._listeners[subname].forEach(listener => send(listener, subname, name));
+
                     notifyDown(subname);
                 }
-            )
+            } else {
+                const keys = Object.keys(obj);
+                keys.forEach(key => {
+                    const subname = name + "." + key;
+                    notifySymlink(subname);
+                    if (options.exclude_notification_paths.indexOf(subname) >= 0)
+                        return notifyDown(subname);
+
+                    if (ApplicationState._listeners[subname])
+                        ApplicationState._listeners[subname].forEach((listener) => send(listener, subname, name));
+
+                    notifyDown(subname);
+                }
+                )
+            }
         }
 
-        if(!explicit)
+        if (!explicit)
             notifyUp(name);
 
         notifyExplicit(name);
 
-        if(!explicit)
+        if (!explicit)
             notifyDown(name);
 
     }
@@ -556,21 +500,21 @@ class ApplicationState {
      */
     static undo(name) {
         //this is just a regular key, no dotted path
-        if(name.indexOf('.') < 0) {
-            if(!ApplicationState._previousState[name])
-                return ApplicationState._state[name]=undefined;
+        if (name.indexOf('.') < 0) {
+            if (!ApplicationState._previousState[name])
+                return ApplicationState._state[name] = undefined;
             ApplicationState._state[name] = ApplicationState._previousState[name].pop();
             return;
         }
 
         //we have a dotted name
         var names = name.split('.');
-        for(let i=names.length; i > 0; i--) {
-            name = names.slice(0,i).join('.');
+        for (let i = names.length; i > 0; i--) {
+            name = names.slice(0, i).join('.');
 
-            if(!ApplicationState._state[name]) continue;
-            if(!ApplicationState._previousState[name])
-                return ApplicationState._state[name]=undefined;
+            if (!ApplicationState._state[name]) continue;
+            if (!ApplicationState._previousState[name])
+                return ApplicationState._state[name] = undefined;
             ApplicationState._state[name] = ApplicationState._previousState[name].pop();
         }
     }
@@ -597,38 +541,174 @@ class ApplicationState {
      * @return object object containing keys and values of the flattened object
      */
     static flatten(obj, path, flattened) {
-        if(!flattened) flattened = [];
-        if(!path) path = "";
+        if (!flattened) flattened = [];
+        if (!path) path = "";
 
         // convert to a dotted path
         let keys = Object.keys(obj);
         let is_array = Array.isArray(obj);
-        for(let i=0; i<keys.length;i++) {
+        for (let i = 0; i < keys.length; i++) {
             let value = obj[keys[i]];
             let new_path;
 
-            if(is_array) {
-                new_path = path + (path ? ".[" + keys[i] + "]" : "");
+            if (is_array) {
+                new_path = path + (path ? "[" + keys[i] + "]" : "");
             } else {
                 new_path = path + (path ? "." : "") + keys[i];
             }
 
-            if(value && (typeof value === 'object')) {
+            if (value && (typeof value === 'object')) {
                 this.flatten(value, new_path, flattened);
                 continue;
             }
 
             value = JSON.stringify(value);
-            if(!value) value = JSON.stringify(null);
-            flattened.push({key: new_path, value: value});
+            if (!value) value = JSON.stringify(null);
+            flattened.push({ key: new_path, value: value });
         }
-        
+
         return flattened;
     };
+
+    static walk(reference) {
+        let start_index = 0;
+        let end_index;
+        let ref;
+        let path;
+        let type;
+        let parent_ref;
+        let parent_path;
+        let parent_type;
+
+        const nodes = [];
+
+        if (reference[0] === "[") {
+            throw Error("Root node cannot be an array");
+        }
+
+        const evaluateParentPath = (name, path, type) => {
+            let parent_path;
+            if (!path) {
+                return "";
+            }
+
+            if (type === "array") {
+                parent_path = path.replace("[" + name + "]", "");
+            } else {
+                parent_path = path.replace("." + name, "");
+            }
+
+            return parent_path;
+        };
+
+        for (end_index = 0; end_index < reference.length; end_index++) {
+            // We don't want to try to process if the indexes match
+            if (start_index === end_index) continue;
+
+            if (reference[start_index] === "." ||
+                reference[start_index] === "[" ||
+                reference[start_index] === "]"
+            ) {
+                start_index++;
+            }
+
+            if (reference[end_index] === ".") {
+                ref = reference.substring(start_index, end_index);
+                path = reference.substring(0, end_index);
+                start_index = end_index + 1;
+                type = "object";
+
+                nodes.push({
+                    name: ref,
+                    path: path,
+                    parent: parent_ref,
+                    parent_path: evaluateParentPath(ref, path, parent_type),
+                    parent_type: parent_type,
+                    type: type
+                });
+
+                parent_ref = ref;
+                parent_type = type;
+
+                continue;
+            }
+
+            if (reference[end_index] === "[") {
+                ref = reference.substring(start_index, end_index);
+                path = reference.substring(0, end_index);
+                start_index = end_index + 1;
+                type = "array";
+
+                nodes.push({
+                    name: ref,
+                    path: path,
+                    parent: parent_ref,
+                    parent_path: evaluateParentPath(ref, path, parent_type),
+                    parent_type: parent_type,
+                    type: type
+                });
+
+                parent_ref = ref;
+                parent_type = type;
+
+                continue;
+            }
+
+            if (reference[end_index] === "]") {
+                ref = reference.substring(start_index, end_index);
+                path = reference.substring(0, end_index + 1);
+
+                // This is the end of the string
+                if (end_index + 1 === reference.length) {
+                    nodes.push({
+                        name: parseInt(ref),
+                        path: path,
+                        parent: parent_ref,
+                        parent_path: evaluateParentPath(ref, path, parent_type),
+                        parent_type: parent_type,
+                        type: "leaf"
+                    });
+
+                    parent_ref = ref;
+
+                    return nodes;
+                } else {
+                    type = reference[end_index + 1] === "[" ? "array" : "object";
+                    nodes.push({
+                        name: parseInt(ref),
+                        path: path,
+                        parent: parent_ref,
+                        parent_path: evaluateParentPath(ref, path, parent_type),
+                        parent_type: parent_type,
+                        type: type
+                    });
+
+                    parent_ref = ref;
+                    parent_type = type;
+                }
+
+                start_index = end_index + 1;
+            }
+        }
+
+        // we've made it all the way through, don't do a final yield
+        if (start_index === end_index + 1) return nodes;
+
+        nodes.push({
+            name: reference.substring(start_index),
+            path: reference,
+            parent: parent_ref,
+            parent_path: evaluateParentPath(reference, path, parent_type),
+            parent_type: parent_type,
+            type: "leaf"
+        });
+
+        return nodes;
+    }
 }
 
 //my kingdom for static class property initializers. :-(
-ApplicationState._previousState= {};
+ApplicationState._previousState = {};
 ApplicationState._state = {};
 ApplicationState._listeners = [];
 ApplicationState._listenerKey = 0;

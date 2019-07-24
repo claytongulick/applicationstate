@@ -5,8 +5,8 @@ describe('Working with Arrays', () => {
         it('should get and set a simple array', () => {
             const test_value = [1, 2, 3];
 
-            ApplicationState.set('test_array', test_value);
-            const retrieved_value = ApplicationState.get('test_array');
+            ApplicationState.set('app.test_array', test_value);
+            const retrieved_value = ApplicationState.get('app.test_array');
 
             expect(retrieved_value, "values are not the same").to.equal(test_value);
         });
