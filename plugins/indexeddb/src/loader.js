@@ -1,12 +1,16 @@
 "use strict";
 
-import ApplicationState from '../../../index';
 import Dexie from 'dexie';
+let ApplicationState;
+
+export const setupLoader = (app_state) => {
+    ApplicationState = app_state;
+}
 
 /**
  * Utility class to handle loading saved state and setting up application state
  */
-class StateLoader {
+export class StateLoader {
     /**
      * Initialize and load state for use with ApplicationState.
      * @param {String} db_name The name of the indexeddb to use to hold application state.
@@ -64,5 +68,3 @@ class StateLoader {
     }
 
 }
-
-export default StateLoader;

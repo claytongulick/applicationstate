@@ -4,9 +4,9 @@ import { StateLoader, StatePersistence } from "..";
 const expect = chai.expect;
 let dexie;
 
-describe('StateLoader', () => {
-    describe('State loader initialization', () => {
-        beforeEach(async () => {
+describe('StateLoader', function () {
+    describe('State loader initialization', function () {
+        beforeEach(async function () {
             Dexie.delete('test_db_b');
             dexie = new Dexie('test_db_b');
 
@@ -26,7 +26,7 @@ describe('StateLoader', () => {
                 ]);
         });
 
-        it('should load a simple value after loading state', async () => {
+        it('should load a simple value after loading state', async function () {
             await StateLoader.load('test_db_b');
 
             const value = ApplicationState.get("app.test_1");
@@ -36,7 +36,7 @@ describe('StateLoader', () => {
             await dexie.close();
         });
 
-        it('should load a complex value', async () => {
+        it('should load a complex value', async function () {
             await StateLoader.load('test_db_b');
 
             const value = ApplicationState.get("app.sub");
@@ -48,7 +48,7 @@ describe('StateLoader', () => {
             await dexie.close();
         });
 
-        it('should load an array value', async () => {
+        it('should load an array value', async function () {
             await StateLoader.load('test_db_b');
 
             const value = ApplicationState.get("app.a");
@@ -65,7 +65,7 @@ describe('StateLoader', () => {
 
 const sleep = (ms) => {
     return new Promise((resolve, reject) => {
-        setTimeout(() => {
+        setTimeout(function () {
             resolve();
         }, ms);
     });

@@ -1,8 +1,8 @@
 const expect = chai.expect;
 
-describe('Working with Arrays', () => {
-    describe('Get and set', () => {
-        it('should get and set a simple array', () => {
+describe('Working with Arrays', function () {
+    describe('Get and set', function () {
+        it('should get and set a simple array', function () {
             const test_value = [1, 2, 3];
 
             ApplicationState.set('app.test_array', test_value);
@@ -12,8 +12,8 @@ describe('Working with Arrays', () => {
         });
     });
 
-    describe('Get dereferenced value', () => {
-        it('should get the first element from an array', () => {
+    describe('Get dereferenced value', function () {
+        it('should get the first element from an array', function () {
             const test_value = [1, 2, 3];
 
             ApplicationState.set('app.test_array', test_value);
@@ -24,8 +24,8 @@ describe('Working with Arrays', () => {
         });
     });
 
-    describe('Set a dereferenced value', () => {
-        it('should set the first element of an array using a string reference', () => {
+    describe('Set a dereferenced value', function () {
+        it('should set the first element of an array using a string reference', function () {
             const test_value = [1, 2, 3];
 
             ApplicationState.set('app.test_array', test_value);

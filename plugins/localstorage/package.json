@@ -1,0 +1,33 @@
+{
+  "name": "applicationstate-plugin-localstorage",
+  "version": "0.0.2",
+  "description": "localStorage plugin for application state loading and persisting",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "npx webpack-serve ./test/webpack.config.js --open --port=8959",
+    "test": "echo \"Open up the test.html file in your browser.\"",
+    "build": "npx webpack ./index.js --output-filename application_state.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/claytongulick/applicationstate.git"
+  },
+  "author": "Joe Mills",
+  "contributors": [
+    "Clayton Gulick"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/claytongulick/applicationstate/issues"
+  },
+  "homepage": "https://github.com/claytongulick/applicationstate/plugin/localstorage#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "core-js": "^2.6.9",
+    "jquery": "^3.3.1",
+    "mocha": "^5.2.0",
+    "webpack": "^4.16.4",
+    "webpack-cli": "^3.1.0",
+    "webpack-serve": "^2.0.2"
+  }
+}

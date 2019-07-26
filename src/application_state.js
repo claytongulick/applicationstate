@@ -7,17 +7,17 @@
  *
  * @author Clay Gulick
  */
-class ApplicationState {
+const ApplicationState = {
 
     /**
      * Return the value for the specific state instance
      * @param name
      * @returns {*}
      */
-    static get(name) {
+    get: function (name) {
         name = ApplicationState._dereferencePath(name);
         return ApplicationState._resolvePath(name);
-    }
+    },
 
     /**
      * Gets a specified path, or sets it with the default values if it's not present.
@@ -25,14 +25,14 @@ class ApplicationState {
      * @param {*} defaults The value to set if not present.
      * @param {Object} options The options object to use for this path.
      */
-    static getOrSet(name, defaults, options) {
+    getOrSet: function (name, defaults, options) {
         const value = ApplicationState.get(name);
         if (value !== undefined) return value;
 
         ApplicationState.set(name, defaults, options);
 
         return ApplicationState.get(name);
-    }
+    },
 
     /**
      * Register a callback for listening to changes to the state.
@@ -40,31 +40,31 @@ class ApplicationState {
      * @param callback function Of the form callback(new_value, old_value) where value will be passed to the callback
      * @returns {String} The listener key to pass back when removing the listener.
      */
-    static listen(name, callback) {
+    listen: function (name, callback) {
         if (!ApplicationState._listeners[name])
             ApplicationState._listeners[name] = [];
         ApplicationState._listenerKey++;
         callback._listenerKey = ApplicationState._listenerKey;
         ApplicationState._listeners[name].push(callback);
         return callback._listenerKey;
-    }
+    },
 
     /**
      * Remove the listener on the specified name for the specified key
      * @param name
      * @param key
      */
-    static removeListener(name, key) {
+    removeListener: function (name, key) {
         if (!ApplicationState._listeners[name]) return;
 
         //forEach here is a a touch wasteful, but just double checking that all listeners for the key are removed
         //though there should only ever be one
-        ApplicationState._listeners.forEach((listener, index) => {
-            if (listener._listenerKey == key) {
+        for (let index = 0; index < ApplicationState._listeners.length; index++) {
+            if (ApplicationState._listeners[index]._listenerKey == key) {
                 ApplicationState._listeners.splice(index, 1);
             }
-        })
-    }
+        }
+    },
 
     /**
      * Set the state value, triggers listeners.
@@ -75,7 +75,7 @@ class ApplicationState {
      * @param value
      * @param options object {notify: true, immutable: false, persist: true}
      */
-    static set(name, value, options) {
+    set: function (name, value, options) {
         name = ApplicationState._dereferencePath(name);
         let default_options = {
             //trigger notifications?
@@ -102,7 +102,7 @@ class ApplicationState {
         }
         ApplicationState._assignValue(name, value);
         ApplicationState.notify(name, false, options);
-    }
+    },
 
 
     /**
@@ -112,7 +112,7 @@ class ApplicationState {
      * @param object Object optional object that can be substituted for use instead of ApplicationState._state
      * @private
      */
-    static _assignValue(path, value, object) {
+    _assignValue: function (path, value, object) {
         object = object || ApplicationState._state;
 
         const nodes = ApplicationState.walk(path);
@@ -139,7 +139,7 @@ class ApplicationState {
         }
 
         throw Error("We should have returned after setting the value.");
-    }
+    },
 
     /**
      * Similar to *nix ln command, this creates a "symlink" between nodes
@@ -147,7 +147,7 @@ class ApplicationState {
      * @param target string The path to the real, existing node that a link is being created for
      * @param link_path string The path to the new symlink
      */
-    static ln(target, link_path) {
+    ln: function (target, link_path) {
         if (!ApplicationState._symlinks)
             ApplicationState._symlinks = {};
         //this is an optimization to store backrefs from targeted nodes. It makes lookups for notifications fast
@@ -166,7 +166,7 @@ class ApplicationState {
             ApplicationState._reverse_symlinks[target] = [];
         //a node can be referred to by multiple symlinks, so we store an array
         ApplicationState._reverse_symlinks[target].push(link_path);
-    }
+    },
 
     /**
      * Delete the specified path. If the target is a symlink, only the symlink will be removed.
@@ -175,7 +175,7 @@ class ApplicationState {
      * @param target
      * @param object an optional alternate object to operate on instead of ApplicationState._state
      */
-    static rm(target, object) {
+    rm: function (target, object) {
         object = object || ApplicationState._state;
         let original_path = target; //save this for notifications
         if (target === 'app')
@@ -208,12 +208,9 @@ class ApplicationState {
             return removeSymlink(target);
 
         if (referredTo(target)) {
-            ApplicationState._reverse_symlinks[target]
-                .forEach(
-                    (symlink) => {
-                        removeSymlink(target, true);
-                    }
-                );
+            for (let index = 0; index < ApplicationState._reverse_symlinks[target].length; index++) {
+                removeSymlink(target, true);
+            }
             delete ApplicationState._reverse_symlinks[target];
         }
 
@@ -245,8 +242,7 @@ class ApplicationState {
                 save_previous: true
             };
         ApplicationState.notify(original_path, false, options);
-
-    }
+    },
 
     /**
      * Return a materialized path that follows symlinks in the original path.
@@ -259,7 +255,7 @@ class ApplicationState {
      * @param path
      * @private
      */
-    static _dereferencePath(path) {
+    _dereferencePath: function (path) {
         if (!ApplicationState._symlinks)
             return path;
 
@@ -274,7 +270,7 @@ class ApplicationState {
         }
 
         return path;
-    }
+    },
 
     /**
      * This essentially does the opposite of _dereferencePath, which is that it will return an array of all combinations
@@ -292,7 +288,7 @@ class ApplicationState {
      * @param path
      * @private
      */
-    static _reverseSymlink(path) {
+    _reverseSymlink: function (path) {
         if (path.indexOf('.') < 0) return [];
         let symlinks = [];
         let resolved_symlinks = [];
@@ -302,26 +298,22 @@ class ApplicationState {
             let leaf = parts.slice(-1);
             let parent_path = parts.slice(0, -1).join('.');
             let parent_symlinks = ApplicationState._reverseSymlink(parent_path);
-            parent_symlinks.forEach(
-                (symlink) => {
-                    resolved_symlinks.push(symlink + "." + leaf);
-                }
-            )
+            for (let index = 0; index < parent_symlinks.length; index++) {
+                resolved_symlinks.push(parent_symlinks[index] + "." + leaf);
+            }
         }
 
         if (ApplicationState._reverse_symlinks[path])
             symlinks = ApplicationState._reverse_symlinks[path];
 
-        symlinks.forEach(
-            (symlink) => {
-                addParentSymlinks(symlink);
-            }
-        );
+        for (let index = 0; index < symlinks.length; index++) {
+            addParentSymlinks(symlinks[index]);
+        }
 
         addParentSymlinks(path);
 
         return symlinks.concat(resolved_symlinks);
-    }
+    },
 
     /**
      * This is similar to _deferencePath, except it will not completely dereference the path, it will only dereference
@@ -336,13 +328,13 @@ class ApplicationState {
      * @param path
      * @private
      */
-    static _materializePath(path) {
+    _materializePath: function (path) {
         let parts = path.split('.');
         let leaf = parts.slice(-1);
         //dereference the parent path so that its materialized.
         let parent_path = ApplicationState._dereferencePath(parts.slice(0, -1).join('.'));
         return parent_path + '.' + leaf;
-    }
+    },
 
     /**
      * Internal utility function to dereference dotted path to a specific object/value
@@ -350,7 +342,7 @@ class ApplicationState {
      * @param object Object optional object that can be substituted for use instead of ApplicationState._state
      * @private
      */
-    static _resolvePath(path, object) {
+    _resolvePath: function (path, object) {
         if (typeof path !== 'string') throw Error("Requires a string, got an " + typeof path + " that " + Array.isArray(path) ? "is" : "isn't" + " an array");
 
         object = object || ApplicationState._state;
@@ -364,14 +356,14 @@ class ApplicationState {
         }
 
         return object;
-    }
+    },
 
     /**
      * Triggers a notification, or 'get' of a value in the application state.
      * @param name
      * @param explicit Boolean indicate whether to notify up/down the hierarchy
      */
-    static notify(name, explicit, options) {
+    notify: function (name, explicit, options) {
         if (ApplicationState._disable_notification) return;
 
         /**
@@ -407,16 +399,16 @@ class ApplicationState {
             //if there's a symlink that refers to this path
             let symlinks = ApplicationState._reverseSymlink(name);
             //and there's a listener on that symlink, trigger that notification
-            symlinks.forEach(
-                symlink => {
-                    if (!ApplicationState._listeners[symlink]) return;
-                    if (options.exclude_notification_paths.indexOf(symlink) >= 0) return;
+            for (let index = 0; index < symlinks.length; index++) {
+                const symlink = symlinks[index];
+                if (!ApplicationState._listeners[symlink]) return;
+                if (options.exclude_notification_paths.indexOf(symlink) >= 0) return;
 
-                    ApplicationState._listeners[symlink].forEach((listener) => {
-                        send(listener, symlink);
-                    });
+                const symlink_listeners = ApplicationState._listeners[symlink];
+                for (let listener_index = 0; listener_index < symlink_listeners.lenth; listener_index++) {
+                    send(symlink_listeners[listener_index], symlink);
                 }
-            );
+            }
         }
 
         //notify listeners up the hierarchy
@@ -428,8 +420,12 @@ class ApplicationState {
                 notifySymlink(node.path);
                 if (options.exclude_notification_paths.indexOf(node.path) >= 0) continue;
 
-                if (ApplicationState._listeners[node.path])
-                    ApplicationState._listeners[node.path].forEach(listener => send(listener, node.path, name));
+                if (ApplicationState._listeners[node.path]) {
+                    const listeners = ApplicationState._listeners[node.path];
+                    for (let index = 0; index < listeners.length; index++) {
+                        send(listeners[index], node.path, name);
+                    }
+                }
             }
         }
 
@@ -440,7 +436,10 @@ class ApplicationState {
             if (!ApplicationState._listeners[name]) return;
             if (options.exclude_notification_paths.indexOf(name) >= 0) return;
 
-            ApplicationState._listeners[name].forEach(listener => send(listener, name));
+            const listeners = ApplicationState._listeners[name];
+            for (let index = 0; index < listeners.length; index++) {
+                send(listeners[index], name);
+            }
         }
 
         // recursively notify down the hierarchy
@@ -458,25 +457,32 @@ class ApplicationState {
                     if (options.exclude_notification_paths.indexOf(subname) >= 0)
                         return notifyDown(subname);
 
-                    if (ApplicationState._listeners[subname])
-                        ApplicationState._listeners[subname].forEach(listener => send(listener, subname, name));
+                    if (ApplicationState._listeners[subname]) {
+                        const subname_listeners = ApplicationState._listeners[subname];
+                        for (let subname_index = 0; subname_index < subname_listeners.length; subname_index++) {
+                            send(subname_listeners[subname_index], subname, name);
+                        }
+                    }
 
                     notifyDown(subname);
                 }
             } else {
                 const keys = Object.keys(obj);
-                keys.forEach(key => {
-                    const subname = name + "." + key;
+                for (let index = 0; index < keys.length; index++) {
+                    const subname = name + "." + keys[index];
                     notifySymlink(subname);
                     if (options.exclude_notification_paths.indexOf(subname) >= 0)
                         return notifyDown(subname);
 
-                    if (ApplicationState._listeners[subname])
-                        ApplicationState._listeners[subname].forEach((listener) => send(listener, subname, name));
+                    if (ApplicationState._listeners[subname]) {
+                        const listeners = ApplicationState._listeners[subname];
+                        for (let subname_index = 0; subname_index < listeners.length; subname_index++) {
+                            send(listeners[subname_index], subname, name);
+                        }
+                    }
 
                     notifyDown(subname);
                 }
-                )
             }
         }
 
@@ -488,7 +494,7 @@ class ApplicationState {
         if (!explicit)
             notifyDown(name);
 
-    }
+    },
 
     /**
      * Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
@@ -498,7 +504,7 @@ class ApplicationState {
      * If there is no previous state for the specified value, it will be set to undefined.
      * @param name
      */
-    static undo(name) {
+    undo: function (name) {
         //this is just a regular key, no dotted path
         if (name.indexOf('.') < 0) {
             if (!ApplicationState._previousState[name])
@@ -517,22 +523,23 @@ class ApplicationState {
                 return ApplicationState._state[name] = undefined;
             ApplicationState._state[name] = ApplicationState._previousState[name].pop();
         }
-    }
+    },
 
     /**
      * Allow for disabling notifications, in the case where application state needs to be modified without
      * triggering listeners
      */
-    static disable_notfication() {
+    disable_notfication: function () {
         ApplicationState._disable_notification = true;
-    }
+    },
 
     /**
      * Reenable notifications
      */
-    static enable_notification() {
+    enable_notification: function () {
         ApplicationState._disable_notification = false;
-    }
+    },
+
     /**
      * Convert an object to a 2d array, where each element is [key,value]. Key is the full dotted path.
      * @param obj
@@ -540,7 +547,7 @@ class ApplicationState {
      * @param flattened
      * @return object object containing keys and values of the flattened object
      */
-    static flatten(obj, path, flattened) {
+    flatten: function (obj, path, flattened) {
         if (!flattened) flattened = [];
         if (!path) path = "";
 
@@ -568,9 +575,9 @@ class ApplicationState {
         }
 
         return flattened;
-    };
+    },
 
-    static walk(reference) {
+    walk: function (reference) {
         let start_index = 0;
         let end_index;
         let ref;
@@ -586,7 +593,7 @@ class ApplicationState {
             throw Error("Root node cannot be an array");
         }
 
-        const evaluateParentPath = (name, path, type) => {
+        const evaluateParentPath = function (name, path, type) {
             let parent_path;
             if (!path) {
                 return "";
@@ -704,15 +711,14 @@ class ApplicationState {
         });
 
         return nodes;
-    }
-}
+    },
 
-//my kingdom for static class property initializers. :-(
-ApplicationState._previousState = {};
-ApplicationState._state = {};
-ApplicationState._listeners = [];
-ApplicationState._listenerKey = 0;
-ApplicationState._options = {};
+    _previousState: {},
+    _state: {},
+    _listeners: [],
+    _listenerKey: 0,
+    _options: {}
+}
 
 export default ApplicationState;
 

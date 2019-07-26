@@ -1,8 +1,8 @@
 const expect = chai.expect;
 
-describe('Basic', () => {
-    describe('Get and set', () => {
-        it('should set and get numeric values',() => {
+describe('Basic', function () {
+    describe('Get and set', function () {
+        it('should set and get numeric values', function () {
             const test_value = 123;
 
             ApplicationState.set('test_number', test_value);
@@ -11,7 +11,7 @@ describe('Basic', () => {
             expect(retrieved_value).to.equal(test_value);
         });
 
-        it('should set and get string values', () => {
+        it('should set and get string values', function () {
             const test_value = 'a string';
 
             ApplicationState.set('test_string', test_value);
@@ -20,7 +20,7 @@ describe('Basic', () => {
             expect(retrieved_value).to.equal(test_value);
         });
 
-        it('should set and get boolean values', () => {
+        it('should set and get boolean values', function () {
             const test_value_1 = false;
             const test_value_2 = true;
 
@@ -33,16 +33,16 @@ describe('Basic', () => {
             expect(test_value_2).to.equal(retrieved_value_2);
         });
 
-        it('should set and get null values', () => {
+        it('should set and get null values', function () {
             const test_value = null;
 
             ApplicationState.set('test_null', test_value);
             const retrieved_value = ApplicationState.get('test_null');
-        
+
             expect(retrieved_value).to.be.null;
         });
 
-        it('should handle undefined values', () => {
+        it('should handle undefined values', function () {
             ApplicationState.set('test_undefined', undefined);
             const retrieved_value = ApplicationState.get('test_undefined');
 

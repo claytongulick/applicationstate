@@ -2,9 +2,9 @@ import ApplicationState from "../src/application_state";
 
 const expect = chai.expect;
 
-describe('Flatten tests', () => {
-    describe('Dereferencing', () => {
-        it('should properly deference a complex object including arrays', () => {
+describe('Flatten tests', function () {
+    describe('Dereferencing', function () {
+        it('should properly deference a complex object including arrays', function () {
             const obj = {
                 a: {
                     a1: 1,
@@ -13,9 +13,9 @@ describe('Flatten tests', () => {
                 },
                 b: [0, 1],
                 c: [
-                    {a: 1},
-                    {b: 2},
-                    {c: 3}
+                    { a: 1 },
+                    { b: 2 },
+                    { c: 3 }
                 ]
             }
 

@@ -1,13 +1,18 @@
 "use strict";
 
-import ApplicationState from '../../../index';
 import Dexie from 'dexie';
+
+let ApplicationState;
+
+export const setupPersistence = (app_state) => {
+    ApplicationState = app_state;
+}
 
 /**
  * Utility class that listens for changes to the root 'app' state and persists them to native storage
  * using React's AsyncStorage class
  */
-class StatePersistence {
+export class StatePersistence {
     /**
      * Construct a new instance of StatePersistence for the indicated database.
      * @param {String} db_name The name of the database to write to.
@@ -158,5 +163,3 @@ class StatePersistence {
         }
     };
 }
-
-export default StatePersistence;

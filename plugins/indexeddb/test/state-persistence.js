@@ -1,12 +1,12 @@
 import Dexie from "dexie";
-import { StateLoader, StatePersistence } from "..";
+import { StateLoader, StatePersistence } from "../index";
 
 const expect = chai.expect;
 let dexie;
 
-describe('StatePersistence', () => {
-    describe('State persistence initialization', () => {
-        beforeEach(() => {
+describe('StatePersistence', function () {
+    describe('State persistence initialization', function () {
+        beforeEach(function () {
             Dexie.delete('test_db_a');
 
             dexie = new Dexie('test_db_a');
@@ -20,13 +20,13 @@ describe('StatePersistence', () => {
             new StatePersistence('test_db_a');
         });
 
-        it('should write a simple value to indexeddb that can be read by Dexie', (done) => {
-            StateLoader.load('test_db_a').then(() => {
+        it('should write a simple value to indexeddb that can be read by Dexie', function (done) {
+            StateLoader.load('test_db_a').then(function () {
 
                 ApplicationState.set("app.test_1", "test_1");
 
                 // Delay and wait for state to perportedly be written.
-                setTimeout(async () => {
+                setTimeout(async function () {
                     const result = await dexie.application_state.where({ 'key': 'test_1' }).toArray();
 
                     const item = result[0];
@@ -40,13 +40,13 @@ describe('StatePersistence', () => {
             });
         });
 
-        it('should write a complex value to indexeddb that can be read by Dexie', (done) => {
-            StateLoader.load('test_db_a').then(() => {
+        it('should write a complex value to indexeddb that can be read by Dexie', function (done) {
+            StateLoader.load('test_db_a').then(function () {
 
                 ApplicationState.set("app.sub.doc.test_1", "test_1");
 
                 // Delay and wait for state to perportedly be written.
-                setTimeout(async () => {
+                setTimeout(async function () {
                     const result = await dexie.application_state.where({ 'key': 'sub.doc.test_1' }).toArray();
 
                     const item = result[0];
@@ -60,12 +60,12 @@ describe('StatePersistence', () => {
             });
         });
 
-        it('should write an array value to indexeddb', () => {
-            StateLoader.load('test_db_a').then(() => {
-                ApplicationState.set("app.a.list", [{"thing": "test"}]);
+        it('should write an array value to indexeddb', function () {
+            StateLoader.load('test_db_a').then(function () {
+                ApplicationState.set("app.a.list", [{ "thing": "test" }]);
 
-                setTimeout(async () => {
-                    const result = await dexie.application_state.where({ 'key': 'a'}).toArray();
+                setTimeout(async function () {
+                    const result = await dexie.application_state.where({ 'key': 'a' }).toArray();
                     console.log(result[0]);
                 }, 100);
             });
