@@ -1,12 +1,12 @@
 {
   "name": "applicationstate",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Utility for maintaining state in an application",
   "main": "index.js",
   "scripts": {
-    "pretest": "node_modules/.bin/webpack-serve ./test/webpack.config.js --open --port=8957",
+    "pretest": "npx webpack-serve ./test/webpack.config.js --open --port=8957",
     "test": "echo \"Open up the test.html file in your browser.\"",
-    "build": "node_modules/.bin/webpack ./src/application_state.js --output-filename application_state.js"
+    "build": "npx webpack ./src/application_state.js --output-filename application_state.js"
   },
   "repository": {
     "type": "git",
@@ -26,11 +26,18 @@
   },
   "homepage": "https://github.com/claytongulick/applicationstate#readme",
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-loader": "^8.0.6",
     "chai": "^4.1.2",
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.1",
     "mocha": "^5.2.0",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0",
     "webpack-serve": "^2.0.2"
+  },
+  "browserslist": "> 0.25%, not dead",
+  "dependencies": {
+    "core-js": "^2.6.9"
   }
 }

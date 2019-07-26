@@ -2,8 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 const core_config = {
-    mode: 'production',
-    devtool: 'none',
+    mode: 'development',
     entry: {
         bundle: './test/test.js',
     },

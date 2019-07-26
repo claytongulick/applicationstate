@@ -1,9 +1,9 @@
 const expect = chai.expect;
 
-describe('Working with Objects', () => {
-    describe('Get and set', () => {
-        it('should get and set a simple object', () => {
-            const test_value = {a: 1, b: 2, c:3};
+describe('Working with Objects', function () {
+    describe('Get and set', function () {
+        it('should get and set a simple object', function () {
+            const test_value = { a: 1, b: 2, c: 3 };
 
             ApplicationState.set('test_object', test_value);
             const retrieved_value = ApplicationState.get('test_object');
@@ -12,9 +12,9 @@ describe('Working with Objects', () => {
         });
     });
 
-    describe('Get dereferenced value', () => {
-        it('should get a value from an object', () => {
-            const test_value = {a: 1, b: 2, c:3};
+    describe('Get dereferenced value', function () {
+        it('should get a value from an object', function () {
+            const test_value = { a: 1, b: 2, c: 3 };
 
             ApplicationState.set('test_object', test_value);
             const retrieved_value = ApplicationState.get('test_object.a');
@@ -23,9 +23,9 @@ describe('Working with Objects', () => {
         });
     });
 
-    describe('Set a dereferenced value', () => {
-        it('should set an element of an object using a string reference', () => {
-            const test_value = {a: 1, b: 2, c:3};
+    describe('Set a dereferenced value', function () {
+        it('should set an element of an object using a string reference', function () {
+            const test_value = { a: 1, b: 2, c: 3 };
 
             ApplicationState.set('test_object', test_value);
             const retrieved_value = ApplicationState.get('test_object.a');
@@ -39,9 +39,9 @@ describe('Working with Objects', () => {
         });
     });
 
-    describe('Objects with numeric keys', () => {
-        it('should deal with the foolish notion of objects with all numeric keys', () => {
-            const test_value = {1: 1, 2: 2, 3: 3}; // GOD don't do this, but if you are forced into it I guess...
+    describe('Objects with numeric keys', function () {
+        it('should deal with the foolish notion of objects with all numeric keys', function () {
+            const test_value = { 1: 1, 2: 2, 3: 3 }; // GOD don't do this, but if you are forced into it I guess...
 
             ApplicationState.set('dumb_object', test_value);
             const retrieved_value_1 = ApplicationState.get('dumb_object.2');

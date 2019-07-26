@@ -1,17 +1,23 @@
 "use strict";
 
-import ApplicationState from '../../src/application_state';
 import Dexie from 'dexie';
+
+let ApplicationState;
+
+export const setupPersistence = (app_state) => {
+    ApplicationState = app_state;
+}
 
 /**
  * Utility class that listens for changes to the root 'app' state and persists them to native storage
  * using React's AsyncStorage class
  */
-class StatePersistence {
-    constructor() {
-    }
-
-    async init(db_name) {
+export class StatePersistence {
+    /**
+     * Construct a new instance of StatePersistence for the indicated database.
+     * @param {String} db_name The name of the database to write to.
+     */
+    constructor(db_name) {
         let db = new Dexie(db_name);
         db.version(1).stores(
             {
@@ -24,7 +30,6 @@ class StatePersistence {
         ApplicationState.listen('app', this.onAppChange.bind(this));
     }
 
-
     /**
      * Listen for a change in the application state and persist it in an optimized way.
      * We queue changes to ensure operations happen in order, since db writes and reads are async.
@@ -33,8 +38,8 @@ class StatePersistence {
      * @param previous_state
      * @param modified_name
      */
-    onAppChange(state,previous_state,modified_name) {
-        if(ApplicationState._options[modified_name]) {
+    onAppChange(state, previous_state, modified_name) {
+        if (ApplicationState._options[modified_name]) {
             let persist = ApplicationState._options[modified_name]['persist'];
             if (!persist)
                 return;
@@ -54,13 +59,13 @@ class StatePersistence {
             value: (typeof value === 'undefined') ? value : JSON.parse(JSON.stringify(value))
         });
         //if there are already items in the queue, they are being worked by another 'thread'
-        if(this.operation_queue.length > 1) 
+        if (this.operation_queue.length > 1)
             return;
 
         processQueue.bind(this)();
 
         function processQueue() {
-            if(this.operation_queue.length == 0)
+            if (this.operation_queue.length == 0)
                 return;
             const item = this.operation_queue[0];
 
@@ -94,8 +99,8 @@ class StatePersistence {
                                 //we need to make sure we're deleting the right stuff here.
                                 //consider the case of setting 'app.location' while we have
                                 //another setting that's 'locationPrevious'
-                                if(key.length > sub_path.length)
-                                    if(key[sub_path.length] != '.')
+                                if (key.length > sub_path.length)
+                                    if (key[sub_path.length] != '.')
                                         continue;
 
                                 keys_to_remove.push(primary_keys[i]);
@@ -111,12 +116,12 @@ class StatePersistence {
                     () => {
                         //now do an optimized write
                         let immutable = ApplicationState._options[full_path] && ApplicationState._options[full_path]['immutable'];
-                        
-                        if(typeof value === 'undefined') 
-                            return new Promise((resolve, reject) => {resolve();}); //not doing a write, this must be a deleted key
+
+                        if (typeof value === 'undefined')
+                            return new Promise((resolve, reject) => { resolve(); }); //not doing a write, this must be a deleted key
 
                         if (value && (typeof value === 'object') && !immutable) {
-                            let flattened = this.flatten(value, sub_path);
+                            let flattened = ApplicationState.flatten(value, sub_path);
                             return this.db.application_state
                                 .bulkPut(flattened)
                                 .then((result) => {
@@ -156,38 +161,5 @@ class StatePersistence {
                     console.trace(error);
                 });
         }
-
-    };
-
-
-    /**
-     * Convert an object to a 2d array, where each element is [key,value]. Key is the full dotted path.
-     * @param obj
-     * @param path
-     * @param flattened
-     * @return object object containing keys and values of the flattened object
-     */
-    flatten(obj, path, flattened) {
-        if(!flattened) flattened = [];
-        if(!path) path = "";
-
-        // convert to a dotted path
-        let keys = Object.keys(obj);
-        for(let i=0; i<keys.length;i++) {
-            let value = obj[keys[i]];
-            let new_path = path + (path ? "." : "") + keys[i];
-            if(value && (typeof value === 'object')) {
-                this.flatten(value, new_path, flattened);
-                continue;
-            }
-
-            value = JSON.stringify(value);
-            if(!value) value = JSON.stringify(null);
-            flattened.push({key: new_path, value: value});
-        }
-        
-        return flattened;
     };
 }
-
-export default StatePersistence;

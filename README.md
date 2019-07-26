@@ -7,6 +7,8 @@ ApplicationState is a simpler approach to state management. It is not opinionate
 ## Getting Started
 ApplicationState usage is intend to be simple and direct.
 
+For a deeper understanding of how the reference strings work see the "Working with References" section below.
+
 ### Getting and Setting
 ApplicationState is designed to store, retrive, and react to changes in state.  For example:
 
@@ -77,13 +79,50 @@ const listener_id = ApplicationState.listen("app.something.nested", () => {});
 ApplicationState.removeListener(listener_id);
 ```
 
-#### Notifications and Arrays
-A notible exception to this is arrays in JavaScript. Under the hood ApplicationState uses getters and setters to do it's notifications.  Since array elements don't support getters and setters, this means any changes inside the array will probably not trigger a listener.  This goes for primitives and objects within arrays.
+## Working With References
+The reference system in ApplicationState is meant to follow the same syntax as object traversal in regular JavaScript.
 
-In the future we are considering implementing Proxy as a means to handle this use-case. However, since we highly value backward compatiblity with older browsers that is currently on hold.
+For instance in the following object:
+
+```javascript
+const obj = {
+    internal_obj: {
+        item: "abc123"
+    }
+};
+
+ApplicationState.set("app.obj", obj);
+```
+
+You would fetch the value assigned to `item` like this:
+
+```javascript
+const app_state_value = ApplicationState.get("app.obj.internal_obj.item");
+const js_value = obj.internal_obj.item;
+console.log(app_state_value === js_value); // prints true
+```
+
+Note the similarity. In both cases the dot syntax provides a reference to the value.  The same applies for array access.
+
+```javascript
+const obj = {
+    internal_array: [
+        "abc123"
+    ]
+}
+ApplicationState.set("app.obj", obj);
+
+const app_state_value = ApplicationState.get("app.obj.internal_array[0]");
+const js_value = obj.internal_array[0];
+console.log(app_state_value === js_value); // prints true
+```
+
+This works for all sorts of object types, including objects within arrays and arrays of arrays.
 
 ## Available Plugins
-At this time, the only plugin available is for the browser using indexedDB.  Find it here [applicationstate-plugin-indexeddb](https://github.com/claytongulick/applicationstate-plugin-indexeddb).  Feel free to contact us if you have published any plugins, we will consider listing them here.
+At this time, the only plugin available is for the browser using indexedDB. It can be found in `plugins/indexeddb` and is importable as a module from there.
+
+Also, it can be loaded from the dist folder for non-module access.
 
 ## Usage
 

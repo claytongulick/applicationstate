@@ -6,3 +6,4 @@ import './basic';
 import './objects';
 import './arrays';
 import './flatten';
+import './walk';

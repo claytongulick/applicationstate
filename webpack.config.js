@@ -5,10 +5,10 @@ const core_config = {
     mode: 'production',
     devtool: 'none',
     entry: {
-        bundle: './test/test.js',
+        bundle: './src/application_state.js',
     },
     output: {
-        path: __dirname + '/',
+        path: __dirname + '/dist/',
         filename: '[name].js'
     }
 }
