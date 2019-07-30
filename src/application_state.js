@@ -57,11 +57,9 @@ const ApplicationState = {
     removeListener: function (name, key) {
         if (!ApplicationState._listeners[name]) return;
 
-        //forEach here is a a touch wasteful, but just double checking that all listeners for the key are removed
-        //though there should only ever be one
-        for (let index = 0; index < ApplicationState._listeners.length; index++) {
-            if (ApplicationState._listeners[index]._listenerKey == key) {
-                ApplicationState._listeners.splice(index, 1);
+        for (let index = 0; index < ApplicationState._listeners[name].length; index++) {
+            if (ApplicationState._listeners[name][index]._listenerKey == key) {
+                ApplicationState._listeners[name].splice(index, 1);
             }
         }
     },
@@ -214,16 +212,22 @@ const ApplicationState = {
             delete ApplicationState._reverse_symlinks[target];
         }
 
-        let parts = target.split('.');
+        let parts = ApplicationState.walk(target);
         let leaf = parts.slice(-1)[0];
         //strip off the leaf
         parts = parts.slice(0, -1);
+
         for (let i = 0; i < parts.length; i++) {
-            object = object[parts[i]];
+            object = object[parts[i].name];
             if (typeof object === 'undefined')
                 throw new Error('Undefined target in ApplicationState.rm: ' + target);
         }
-        delete object[leaf];
+
+        if (leaf.parent_type === "array") {
+            object.splice(leaf.name, 1);
+        } else {
+            delete object[leaf.name];
+        }
 
         let options = ApplicationState._options[original_path];
         if (!options)
@@ -378,12 +382,14 @@ const ApplicationState = {
                 return;
 
             name = ApplicationState._dereferencePath(name);
-            if (ApplicationState._previousState[name])
+            if (ApplicationState._previousState[name]) {
                 return listener(
                     ApplicationState._resolvePath(name),
                     ApplicationState._previousState[name][ApplicationState._previousState[name].length - 1],
                     modified_name
                 );
+            }
+
             //no previous state, set undefined
             listener(ApplicationState._resolvePath(name), undefined, modified_name);
         }
