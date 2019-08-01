@@ -1,0 +1,119 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mongo:3.4.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      # Test and build the main repo
+      - run:
+        working_directory: ~/repo
+        command: |
+          npm test
+          npm build
+
+      # Test and build the indexeddb plugin
+      - run:
+        working_directory: ~/repo/plugins/indexeddb
+        command: |
+          npm test
+          npm build
+
+      - run:
+        working_directory: ~/repo/plugins/localstorage
+        command: |
+          npm test
+          npm build
+
+  release:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mongo:3.4.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run: npm install
+
+      # Test and build the main repo
+      - run:
+        working_directory: ~/repo
+        command: |
+          npm test
+          npm build
+
+      # Test and build the indexeddb plugin
+      - run:
+        working_directory: ~/repo/plugins/indexeddb
+        command: |
+          npm test
+          npm build
+
+      - run:
+        working_directory: ~/repo/plugins/localstorage
+        command: |
+          npm test
+          npm build
+
+workflows:
+  version: 2
+  dev:
+    jobs:
+      - build:
+        filters:
+          branches:
+            only: ci_testing
+  release:
+    jobs:
+      - build:
+        filters:
+          branches:
+            only: ci_release
+      - deploy:
+        requires:
+          - build
+        filters:
+          branches:
+            only: ci_release
