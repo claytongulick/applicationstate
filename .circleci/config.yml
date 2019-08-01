@@ -35,23 +35,23 @@ jobs:
 
       # Test and build the main repo
       - run:
-        working_directory: ~/repo
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo
+          command: |
+            npm test
+            npm build
 
       # Test and build the indexeddb plugin
       - run:
-        working_directory: ~/repo/plugins/indexeddb
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo/plugins/indexeddb
+          command: |
+            npm test
+            npm build
 
       - run:
-        working_directory: ~/repo/plugins/localstorage
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo/plugins/localstorage
+          command: |
+            npm test
+            npm build
 
   release:
     docker:
@@ -79,23 +79,23 @@ jobs:
 
       # Test and build the main repo
       - run:
-        working_directory: ~/repo
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo
+          command: |
+            npm test
+            npm build
 
       # Test and build the indexeddb plugin
       - run:
-        working_directory: ~/repo/plugins/indexeddb
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo/plugins/indexeddb
+          command: |
+            npm test
+            npm build
 
       - run:
-        working_directory: ~/repo/plugins/localstorage
-        command: |
-          npm test
-          npm build
+          working_directory: ~/repo/plugins/localstorage
+          command: |
+            npm test
+            npm build
 
 workflows:
   version: 2
