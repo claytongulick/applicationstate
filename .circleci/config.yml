@@ -117,3 +117,4 @@ workflows:
         filters:
           branches:
             only: ci_release
+
