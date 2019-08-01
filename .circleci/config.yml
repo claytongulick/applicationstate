@@ -102,18 +102,18 @@ workflows:
   dev:
     jobs:
       - build:
-        filters:
-          branches:
-            only: ci_testing
+          filters:
+            branches:
+              ignore: master
   release:
     jobs:
       - build:
-        filters:
-          branches:
-            only: ci_release
+          filters:
+            branches:
+              only: master
       - deploy:
-        requires:
-          - build
-        filters:
-          branches:
-            only: ci_release
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
