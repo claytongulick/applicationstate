@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node
+      - image: circleci/node-browsers
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -81,6 +81,7 @@ jobs:
       - run:
           working_directory: ~/repo
           command: |
+            CHROME_BIN=/usr/bin/google-chrome
             npm test
             npm build
 
@@ -88,12 +89,14 @@ jobs:
       - run:
           working_directory: ~/repo/plugins/indexeddb
           command: |
+            CHROME_BIN=/usr/bin/google-chrome
             npm test
             npm build
 
       - run:
           working_directory: ~/repo/plugins/localstorage
           command: |
+            CHROME_BIN=/usr/bin/google-chrome
             npm test
             npm build
 
