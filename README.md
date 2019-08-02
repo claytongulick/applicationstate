@@ -1,6 +1,8 @@
 # ApplicationState
 Utility for maintaining stateful applications
 
+[![CircleCI](https://circleci.com/gh/blargism/applicationstate/tree/master.svg?style=svg)](https://circleci.com/gh/blargism/applicationstate/tree/master)
+
 ## About
 ApplicationState is a simpler approach to state management. It is not opinionated, aims to be framework agnostic and has no external dependencies. There is a plugin system allowing state to be persised or otherwise processed.
 
