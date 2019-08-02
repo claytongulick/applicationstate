@@ -4,9 +4,9 @@
   "description": "IndexedDB plugin for application state loading and persisting",
   "main": "index.js",
   "scripts": {
-    "pretest": "node_modules/.bin/webpack-serve ./test/webpack.config.js --open --port=8958",
-    "test": "echo \"Open up the test.html file in your browser.\"",
-    "build": "node_modules/.bin/webpack ./index.js --output-filename application_state.js"
+    "dev": "npx webpack-serve ./test/webpack.config.js --open --port=8957",
+    "test": "npx karma start --single-run --browsers ChromeHeadless karma.conf.js",
+    "build": "npx webpack ./index.js --output-filename ../../dist/applicationstate-plugin-indexeddb.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,11 @@
     "chai": "^4.1.2",
     "core-js": "^2.6.9",
     "jquery": "^3.3.1",
+    "karma": "^4.2.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^3.0.0",
+    "karma-mocha": "^1.3.0",
+    "karma-webpack": "^4.0.2",
     "mocha": "^5.2.0",
     "webpack": "^4.16.4",
     "webpack-cli": "^3.1.0",
