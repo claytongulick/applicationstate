@@ -1,4 +1,4 @@
-const expect = chai.expect;
+import ApplicationState from "../src/application_state";
 
 describe('Basic', function () {
     it('should set and get numeric values', function () {

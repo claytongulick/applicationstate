@@ -1,4 +1,4 @@
-const expect = chai.expect;
+import ApplicationState from "../src/application_state";
 
 describe('Working with Objects', function () {
     it('should get and set a simple object', function () {

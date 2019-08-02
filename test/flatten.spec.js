@@ -1,7 +1,5 @@
 import ApplicationState from "../src/application_state";
 
-const expect = chai.expect;
-
 describe('Flatten function', function () {
     it('should properly deference a complex object including arrays', function () {
         const obj = {

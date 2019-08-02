@@ -1,10 +1,13 @@
-import ApplicationState from '../src/application_state';
+const ApplicationState = require('../src/application_state');
+const { expect } = require("chai");
+
 window.ApplicationState = ApplicationState;
+window.expect = expect;
 
 // tests
-import './flatten';
-import './walk';
-import './basic';
-import './objects';
-import './arrays';
-import './notifications';
+import './flatten.spec';
+import './walk.spec';
+import './basic.spec';
+import './objects.spec';
+import './arrays.spec';
+import './notifications.spec';
