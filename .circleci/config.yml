@@ -142,6 +142,8 @@ workflows:
             branches:
               ignore: master
       - build:
+          requires:
+            - build
           filters:
             branches:
               ignore: master
@@ -152,6 +154,8 @@ workflows:
             branches:
               only: master
       - prerelease:
+          requires:
+            - build
           filters:
             branches:
               only: master
