@@ -1,4 +1,6 @@
-const expect = chai.expect;
+import ApplicationState from "../src/application_state";
+
+if (!expect) var expect = chai.expect;
 
 describe('Notifications', function () {
     it("should notify for a single node", function () {
@@ -25,7 +27,7 @@ describe('Notifications', function () {
         ApplicationState.set("app.test_1", "test_2");
 
         ApplicationState.removeListener("app.test_1", listener_key);
-    })
+    });
 
     it("should notify for a parent node with proper handling of previous state", function () {
         let current_state, added_node, prev_state;
