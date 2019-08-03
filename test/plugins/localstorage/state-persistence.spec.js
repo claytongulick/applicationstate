@@ -1,8 +1,11 @@
-import { StateLoader, StatePersistence, init } from "../index";
+import { StateLoader, StatePersistence, init } from "../../../plugins/localstorage";
+import ApplicationState from "../../../src/application_state";
 
-const expect = chai.expect;
+if (!expect) var expect = chai.expect;
 
-describe('StatePersistence', function () {
+init(ApplicationState);
+
+describe('Local Storage Plugin StatePersistence', function () {
     this.beforeAll(function () {
         localStorage.clear();
         new StatePersistence("test_db_a");

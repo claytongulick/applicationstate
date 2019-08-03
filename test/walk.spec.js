@@ -1,6 +1,6 @@
 import ApplicationState from "../src/application_state";
 
-const expect = chai.expect;
+if (!expect) var expect = chai.expect;
 
 describe('Walk function', function () {
     it('should walk through and return proper meta-data for a reference with only objects', function () {
