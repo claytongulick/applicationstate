@@ -1,5 +1,7 @@
 import ApplicationState from "../src/application_state";
 
+if (!expect) var expect = chai.expect;
+
 describe('Basic', function () {
     it('should set and get numeric values', function () {
         const test_value = 123;

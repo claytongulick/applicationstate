@@ -1,5 +1,7 @@
 import ApplicationState from "../src/application_state";
 
+if (!expect) var expect = chai.expect;
+
 describe('Notifications', function () {
     it("should notify for a single node", function () {
         const listener_key = ApplicationState.listen("app.test_1", function (state, previous_state) {

@@ -1,5 +1,7 @@
 import ApplicationState from "../src/application_state";
 
+if (!expect) var expect = chai.expect;
+
 describe('Working with Arrays', function () {
     it('should get and set a simple array', function () {
         const test_value = [1, 2, 3];

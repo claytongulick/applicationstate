@@ -1,5 +1,7 @@
 import ApplicationState from "../src/application_state";
 
+if (!expect) var expect = chai.expect;
+
 describe('Working with Objects', function () {
     it('should get and set a simple object', function () {
         const test_value = { a: 1, b: 2, c: 3 };
