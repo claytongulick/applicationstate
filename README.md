@@ -1,18 +1,22 @@
 # ApplicationState
+
 Utility for maintaining stateful applications
 
 [![CircleCI](https://circleci.com/gh/blargism/applicationstate/tree/master.svg?style=svg)](https://circleci.com/gh/blargism/applicationstate/tree/master)
 
 ## About
+
 ApplicationState is a simpler approach to state management. It is not opinionated, aims to be framework agnostic and has no external dependencies. There is a plugin system allowing state to be persised or otherwise processed.
 
 ## Getting Started
+
 ApplicationState usage is intend to be simple and direct.
 
 For a deeper understanding of how the reference strings work see the "Working with References" section below.
 
 ### Getting and Setting
-ApplicationState is designed to store, retrive, and react to changes in state.  For example:
+
+ApplicationState is designed to store, retrive, and react to changes in state. For example:
 
 ```javascript
 ApplicationState.set("app.something", "something");
@@ -20,7 +24,7 @@ const something = ApplicationState.get("app.something");
 console.log(something); // prints "something";
 ```
 
-This seems to act like a key-value store, but it's a bit more than that.  For example:
+This seems to act like a key-value store, but it's a bit more than that. For example:
 
 ```javascript
 ApplicationState.set("app.something.nested", "nested");
@@ -28,7 +32,7 @@ const something = ApplicationState.get("app.something");
 console.log(something); // prints { something: "nested" }
 ```
 
-As you can see, ApplicationState takes care of referencing and de-referencing the state graph.  You can create a node in the graph using this method.  Note that prior to this, neither `something` nor `nested` existed on the state graph until we set it.  ApplicationState takes care of that for you.
+As you can see, ApplicationState takes care of referencing and de-referencing the state graph. You can create a node in the graph using this method. Note that prior to this, neither `something` nor `nested` existed on the state graph until we set it. ApplicationState takes care of that for you.
 
 Lastly, you can connect two different parts of the state graph together using linking.
 
@@ -43,10 +47,11 @@ const changed = ApplicationState.get("app.something.nested");
 console.log(changed); // prints "changed"
 ```
 
-Notice that in the above example, you can change the original or the linked item and the value for both is changed.  It works a lot like the linux `ln` command.
+Notice that in the above example, you can change the original or the linked item and the value for both is changed. It works a lot like the linux `ln` command.
 
 ### Reacting to Changes
-Keeping state is great, but many times you need a means to know when the state has changed.  ApplicationState provides branch level notifications rather than just node level. This means that if anything changes within a child node of the state graph, all of it's parent elements will also get a notification, all the way up to the top level node.  A perfect example of another system that works this way is the DOM.
+
+Keeping state is great, but many times you need a means to know when the state has changed. ApplicationState provides branch level notifications rather than just node level. This means that if anything changes within a child node of the state graph, all of it's parent elements will also get a notification, all the way up to the top level node. A perfect example of another system that works this way is the DOM.
 
 Here's an example of a few listeners.
 
@@ -56,12 +61,12 @@ ApplicationState.set("app.parent.child_two", "obedient");
 
 // Child level listener
 ApplicationState.listen("app.parent.child_one", (new_value, old_value) => {
-    console.log("child level", new_value, old_value);
+  console.log("child level", new_value, old_value);
 });
 
 // Parent level listener
 ApplicationStaate.listen("app.parent", (new_value, old_value) => {
-    console.log("parent_level", new_value, old_value);
+  console.log("parent_level", new_value, old_value);
 });
 
 ApplicationState.set("app.parent.child_one", "reformed");
@@ -72,7 +77,7 @@ ApplicationState.set("app.parent.child_one", "reformed");
 //    { child_one: "rebelious", child_two: " obedient" }
 ```
 
-The implications of being able to watch a branch rather than a node are significant.  It allows an application to react to changes on multiple levels with relative ease.
+The implications of being able to watch a branch rather than a node are significant. It allows an application to react to changes on multiple levels with relative ease.
 
 Removing listeners is a simple process, but requires you save the reference to the listener.
 
@@ -82,15 +87,16 @@ ApplicationState.removeListener(listener_id);
 ```
 
 ## Working With References
+
 The reference system in ApplicationState is meant to follow the same syntax as object traversal in regular JavaScript.
 
 For instance in the following object:
 
 ```javascript
 const obj = {
-    internal_obj: {
-        item: "abc123"
-    }
+  internal_obj: {
+    item: "abc123"
+  }
 };
 
 ApplicationState.set("app.obj", obj);
@@ -104,14 +110,12 @@ const js_value = obj.internal_obj.item;
 console.log(app_state_value === js_value); // prints true
 ```
 
-Note the similarity. In both cases the dot syntax provides a reference to the value.  The same applies for array access.
+Note the similarity. In both cases the dot syntax provides a reference to the value. The same applies for array access.
 
 ```javascript
 const obj = {
-    internal_array: [
-        "abc123"
-    ]
-}
+  internal_array: ["abc123"]
+};
 ApplicationState.set("app.obj", obj);
 
 const app_state_value = ApplicationState.get("app.obj.internal_array[0]");
@@ -122,46 +126,101 @@ console.log(app_state_value === js_value); // prints true
 This works for all sorts of object types, including objects within arrays and arrays of arrays.
 
 ## Available Plugins
-At this time, the only plugin available is for the browser using indexedDB. It can be found in `plugins/indexeddb` and is importable as a module from there.
 
-Also, it can be loaded from the dist folder for non-module access.
+At this time there are two storage plugins.
+One using Indexeddb, which is preferred for evergreen browsers.
+The other provides storage via localStorage, and is suitable for use with IE11.
 
-## Usage
+In both plugins it stores just the string reference and scalar values.
+
+### Indexeddb Plugin
+
+The indexeddb plugin provides a robust storage option for loading and saving the state tree.
+It is the more performant of the two.
+
+#### Usage
+
+Initializing the plugin is simple, just do the following.
+
+```javascript
+import ApplicationState from "applicationstate";
+import { init } from "applicationstate/plugins/indexeddb";
+
+init(ApplicationState, "db_name").then(<start app here>).catch(<handle errors>);
+```
+
+The `init` function takes the ApplicationState singleton and the database name as an argument.
+We are passing in ApplicationState to support the future goal of application state supporting sub-trees in it's state.
+
+Reads and writes to the ApplicationState state tree are instant, but the writes to the actual indexeddb database are asynchronous.
+This means you can treat ApplicationState as synchronous in it's writes, without worrying about I/O blocking for the write to indexeddb.
+
+Note, this plugin uses the `Dexie` package to interact with indexeddb.
+
+### Local Storage Plugin
+
+The local storage solution is overall less performant, but is fully supported by IE11.
+
+#### Usage
+
+Initializing the plugin is even simpler, just do the following.
+
+```javascript
+import ApplicationState from "applicationstate";
+import { init } from "applicationstate/plugins/indexeddb";
+
+init(ApplicationState, "db_name");
+```
+
+Note that this plugin does not return a promise. It is synchronous.
+This means that there is some I/O blocking involved.
+Large state trees are not recommended with this plugin.
+
+## Methods and Properties
 
 The API for Application is very simple, there is currently no constructor everything is implemented statically:
 
 ### ApplicationState.get(name)
+
 Return the value at the given path
 
 ### ApplicationState.set(name, value)
+
 Set the value at the specified path
 
 ### ApplicationState.listen(name, callback)
+
 Listen for changes at the specified path, invoking the callback with the new and old values. Callback should be of the form:
-    (new_value, old_value) => { ... }
+(new_value, old_value) => { ... }
 A listener key will be returned, it can be used later to remove the listener, if needed.
 
 ### ApplicationState.removeListener(name, key)
+
 Remove the listener at the specified path with the given key
 
 ### ApplicationState.ln(target, link_path)
+
 This is similar the the unix "ln" symlink functionality. It is used to link a node to another area in the graph. The linked node can be used interchangably with the original. Listeners will be notified on both the original path and the symlinked path.
 
 ### ApplicationState.rm(name)
+
 Delete the specified path. If the target is a symlink, only the symlink will be removed.
 If a node pointed to by a symlink is deleted, the symlink will also be deleted.
 
 ### ApplicationState.notify(name, explicit, options)
+
 Used to trigger a listener. If explicit is set to true, only a listener that is directly pointing at the specified node will be triggered, hierarchical listeners will not. The options parameter is reserved for use by plugin authors and carries information such as whether the changed value should be persisted.
 
 ### ApplicationState.undo(name)
+
 Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
-child names and undo any changes below it. So, for example, if you were to call undo('app')  and 'app' was the top
+child names and undo any changes below it. So, for example, if you were to call undo('app') and 'app' was the top
 level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...
 
 If there is no previous state for the specified value, it will be set to undefined.
 
 ## Theory and Design
+
 ApplicationState, as it's name implies, is used for maintaining state in applications. It is a different approach to solving the classic problem, and is language agnostic though this implementation is in JavaScript.
 
 Over the years many patterns have emerged in software architecture - all trying to solve the same fundamental problem: maintain state, and react to changes in state.
@@ -182,7 +241,6 @@ Here's a simple example. Imagine an application that has a simple login form, a 
 Here's a rough graph of what the overall state of that application might look like:
 
 ![graph diagram](./docs/state_graph.png "State Graph Example")
-
 
 In the above graph, the root node is "app", with a leaf called "location" and three child nodes, "user","screen" and "current_job".
 
@@ -206,36 +264,45 @@ For example, maybe your application would like to keep a log of all changes that
 
 The key architectural insight of ApplicationState is that ALL of your UI state is represented by the graph and can be instantly stored and retrieved. This is particularly useful, for example, in mobile applications where the application can be killed and restarted at any time, and the expectation is that state will be restored properly.
 
-In the [BARE architecture repo](https://github.com/claytongulick/BARE), there is documentation about how ApplicationState can fit into an overall reactive architecture, though it should be noted that ApplicationState is *not* limited to [BARE](https://github.com/claytongulick/BARE) and can be used easily with React, React Native, etc...
+In the [BARE architecture repo](https://github.com/claytongulick/BARE), there is documentation about how ApplicationState can fit into an overall reactive architecture, though it should be noted that ApplicationState is _not_ limited to [BARE](https://github.com/claytongulick/BARE) and can be used easily with React, React Native, etc...
 
 This is a brief summary of the ApplicationState theory, there is a lot more to it with tons of handy featues like:
 
- * Previous state / undo
- * Linked nodes
- * Plugins for persistence, loading and additional functionality (see applicationstate-plugins-indexeddb for persistence and loading from IndexedDB in the browser)
- * Notification control
+- Previous state / undo
+- Linked nodes
+- Plugins for persistence, loading and additional functionality (see applicationstate-plugins-indexeddb for persistence and loading from IndexedDB in the browser)
+- Notification control
 
- Future features will include:
- * Isomorphism plugin - automatic sync to the server
- * Merkle tree implementation for auto change detection/tree syncing
- * Sub graph splitting and merging
- * Cloud functions that respond to listeners/changes using AWS lambda, Google cloud functions, etc...
+Future features will include:
 
- Once the above features are implemented, many applications will be able to full implemented "serverless"
+- Isomorphism plugin - automatic sync to the server
+- Merkle tree implementation for auto change detection/tree syncing
+- Sub graph splitting and merging
+- Cloud functions that respond to listeners/changes using AWS lambda, Google cloud functions, etc...
+
+Once the above features are implemented, many applications will be able to full implemented "serverless"
 
 ## Referencing and Dereferencing
 
-The means of getting and setting items within the state tree is accomplished via a dereferenced string.  Here are some examples:
+The means of getting and setting items within the state tree is accomplished via a dereferenced string. Here are some examples:
 
 ```javascript
-{ a: 1 } // key: 'a', value: '1'
-{ a: { b: 1 } } // key: 'a.b', value: '1'
-{ a: [ { b: 1 } ] } // key: 'a.[0].b', value: '1'
+{
+  a: 1;
+} // key: 'a', value: '1'
+{
+  a: {
+    b: 1;
+  }
+} // key: 'a.b', value: '1'
+{
+  a: [{ b: 1 }];
+} // key: 'a.[0].b', value: '1'
 ```
 
 As you can see, the object hieracrhy is represented by variable names separated by either a `.` in the case of objects, or `.[#].` in the case of an array.
 
-These dereferenced strings can later be used to retrive a single value or a portion from within the state tree.  Consider the following:
+These dereferenced strings can later be used to retrive a single value or a portion from within the state tree. Consider the following:
 
 ```javascript
 // the current state
@@ -249,7 +316,8 @@ const c1 = ApplicationState.get('c.c1');
 ```
 
 ## Running Tests
-Since this module is designed for the browser and designed to be run as a module, we use the webpack to create a testing environment run in the browser.  This is accomplished through [webpack-serve](https://github.com/webpack-contrib/webpack-serve).  Follow these steps to get it running.
+
+Since this module is designed for the browser and designed to be run as a module, we use the webpack to create a testing environment run in the browser. This is accomplished through [webpack-serve](https://github.com/webpack-contrib/webpack-serve). Follow these steps to get it running.
 
 ```
 // install development dependencies
@@ -261,4 +329,10 @@ npm test
 // stop the server with ctrl-c
 ```
 
-Unlike most approaches to testing, the webpack-server keeps going.  This enables you to update both the library and unit tests and see instant updates durring development.  Of course the down side to that is you need to put in the momentous effort to `ctrl-c` to stop the server once you are done.
+Unlike most approaches to testing, the webpack-server keeps going. This enables you to update both the library and unit tests and see instant updates durring development. Of course the down side to that is you need to put in the momentous effort to `ctrl-c` to stop the server once you are done.
+
+## Future Enhancements & How You Can Help
+
+- Fully document the plugins.
+- Better documentation for links (`ln` method).
+- Example usage with different frameworks.

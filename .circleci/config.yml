@@ -61,7 +61,7 @@ jobs:
           working_directory: ~/repo
           command: |
             npm install
-            npm build
+            npm run build
 
   prerelease:
     docker:
@@ -90,7 +90,7 @@ jobs:
           working_directory: ~/repo
           command: |
             npm install
-            npm build
+            npm run build
 
 workflows:
   version: 2

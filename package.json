@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "npx webpack-serve ./test/webpack.config.js --open --port=8957",
     "test": "npx karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "build": "npx webpack ./src/application_state.js --output-filename application_state.js"
+    "build:main": "npx webpack ./src/application_state.js --output-filename application_state.js",
+    "build:indexeddb": "npx webpack ./plugins/indexeddb/index.js --output-filename application_state-plugin-indexeddb.js",
+    "build:localstorage": "npx webpack ./plugins/localstorage/index.js --output-filename application_state-plugin-localstorage.js",
+    "build": "npm run build:main && npm run build:indexeddb && npm run build:localstorage"
   },
   "repository": {
     "type": "git",
