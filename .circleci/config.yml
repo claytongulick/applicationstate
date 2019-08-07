@@ -4,117 +4,60 @@
 #
 version: 2
 jobs:
-  test:
+  build:
     docker:
-      # specify the version you desire here
       - image: circleci/node:12-browsers
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
     working_directory: ~/repo
-
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
-      # Test and build the main repo
       - run:
-          working_directory: ~/repo
           command: |
             npm install
             CHROME_BIN=/usr/bin/google-chrome
             npm test
+            npm build
 
-  build:
+  site:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:12-browsers
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
+      - image: python:3.7
     working_directory: ~/repo
-
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-{{ checksum "sitemap.xml" }}
             - v1-dependencies-
-
-      # Test and build the main repo
       - run:
-          working_directory: ~/repo
           command: |
-            npm install
-            npm run build
-
-  prerelease:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:12-browsers
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      # Test and build the main repo
-      - run:
-          working_directory: ~/repo
-          command: |
-            npm install
-            npm run build
+            pip install mkdocs mkdocs-material
+            mkdocs gh-deploy -m "[ci skip]"
 
 workflows:
   version: 2
   dev:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: master
       - build:
-          requires:
-            - test
           filters:
             branches:
-              ignore: master
-  prerelease:
+              ignore:
+                - gh-pages
+  release:
     jobs:
-      - test:
+      - build:
           filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
             branches:
-              only: master
-      - prerelease:
+              ignore: /.*/
+      - site:
           requires:
-            - test
+            - build
           filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
             branches:
-              only: master
+              ignore: /.*/
