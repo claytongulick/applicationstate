@@ -1,0 +1,825 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+      
+      
+        <meta name="author" content="Clayton Gulick, Joe Mills">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.4.0">
+    
+    
+      
+        <title>Documentation - ApplicationState</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.0284f74d.css">
+      
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.74668098.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+    
+    
+  </head>
+  
+    <body dir="ltr">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#applicationstate-api" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="ApplicationState" class="md-header-nav__button md-logo">
+          
+            <img src="../img/logo_plain.svg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              ApplicationState
+            </span>
+            <span class="md-header-nav__topic">
+              
+                Documentation
+              
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/claytongulick/applicationstate/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="ApplicationState" class="md-nav__button md-logo">
+      
+        <img src="../img/logo_plain.svg" width="48" height="48">
+      
+    </a>
+    ApplicationState
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/claytongulick/applicationstate/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../start/" title="Getting Started" class="md-nav__link">
+      Getting Started
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../references/" title="Reference Strings" class="md-nav__link">
+      Reference Strings
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Documentation
+      </label>
+    
+    <a href="./" title="Documentation" class="md-nav__link md-nav__link--active">
+      Documentation
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methods" title="Methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-getname" title="static get(name)" class="md-nav__link">
+    static get(name)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-setname-value" title="static set(name, value)" class="md-nav__link">
+    static set(name, value)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-listenname-callback" title="static listen(name, callback)" class="md-nav__link">
+    static listen(name, callback)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-removelistenername-key" title="static removeListener(name, key)" class="md-nav__link">
+    static removeListener(name, key)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-lntarget-link_path" title="static ln(target, link_path)" class="md-nav__link">
+    static ln(target, link_path)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-rmname" title="static rm(name)" class="md-nav__link">
+    static rm(name)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-notifyname-explicit-options" title="static notify(name, explicit, options)" class="md-nav__link">
+    static notify(name, explicit, options)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-undoname" title="static undo(name)" class="md-nav__link">
+    static undo(name)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
+    
+    <label class="md-nav__link" for="nav-5">
+      Plugins
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-5">
+        Plugins
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../plugins/default/" title="Default Plugins" class="md-nav__link">
+      Default Plugins
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../plugins/writing/" title="Writing Plugins" class="md-nav__link">
+      Writing Plugins
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../design/" title="Theory and Design" class="md-nav__link">
+      Theory and Design
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../developing/" title="Contributing" class="md-nav__link">
+      Contributing
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../release-notes/" title="Release Notes" class="md-nav__link">
+      Release Notes
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methods" title="Methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-getname" title="static get(name)" class="md-nav__link">
+    static get(name)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-setname-value" title="static set(name, value)" class="md-nav__link">
+    static set(name, value)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-listenname-callback" title="static listen(name, callback)" class="md-nav__link">
+    static listen(name, callback)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-removelistenername-key" title="static removeListener(name, key)" class="md-nav__link">
+    static removeListener(name, key)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-lntarget-link_path" title="static ln(target, link_path)" class="md-nav__link">
+    static ln(target, link_path)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-rmname" title="static rm(name)" class="md-nav__link">
+    static rm(name)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-notifyname-explicit-options" title="static notify(name, explicit, options)" class="md-nav__link">
+    static notify(name, explicit, options)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#static-undoname" title="static undo(name)" class="md-nav__link">
+    static undo(name)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/claytongulick/applicationstate/edit/master/docs/api.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="applicationstate-api">ApplicationState API</h1>
+<p>The API for Application is very simple, there is currently no constructor everything is implemented statically:</p>
+<h2 id="methods">Methods</h2>
+<h3 id="static-getname"><code>static get(name)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the desired node within the state tree.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Return the value at the given path.</p>
+<h3 id="static-setname-value"><code>static set(name, value)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the desired node within the state tree.</td>
+    </tr>
+    <tr>
+      <td>value</td>
+      <td>Object|Array|Scalar</td>
+      <td>The value to place at the specified node within the state tree.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Set the value at the specified path.</p>
+<h3 id="static-listenname-callback"><code>static listen(name, callback)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the desired node to center the listener on.</td>
+    </tr>
+    <tr>
+      <td>callback</td>
+      <td>Function</td>
+      <td>The function to execute when a node within the </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Listen for changes at the specified path, invoking the callback with the new and old values. Callback should be of the form:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="p">(</span><span class="nx">new_value</span><span class="p">,</span> <span class="nx">old_value</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+</pre></div>
+</td></tr></table>
+
+<p>A listener key will be returned, it can be used later to remove the listener, if needed.</p>
+<h3 id="static-removelistenername-key"><code>static removeListener(name, key)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the desired node where the listener was set.</td>
+    </tr>
+    <tr>
+      <td>key</td>
+      <td>String</td>
+      <td>The listener key that was returned when the listener was first set.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Remove the listener at the specified path with the given key</p>
+<h3 id="static-lntarget-link_path"><code>static ln(target, link_path)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>target</td>
+      <td>String</td>
+      <td>The existing node to be linked.</td>
+    </tr>
+    <tr>
+      <td>link_path</td>
+      <td>String</td>
+      <td>The path to create as a link.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This is similar the the unix "ln" symlink functionality. It is used to link a node to another area in the graph. The linked node can be used interchangably with the original. Listeners will be notified on both the original path and the symlinked path.</p>
+<h3 id="static-rmname"><code>static rm(name)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the node to fully remove from the state tree.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Delete the specified path. If the path refers to an object or array, everything with that object or array is also removed. If the target is a symlink, only the symlink will be removed. If a node pointed to by a symlink is deleted, the symlink will also be deleted.</p>
+<h3 id="static-notifyname-explicit-options"><code>static notify(name, explicit, options)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the node to center the notification on.</td>
+    </tr>
+    <tr>
+      <td>explicit</td>
+      <td>Boolean</td>
+      <td>Do not notify up or down the state tree, just notify the path specified.</td>
+    </tr>
+    <tr>
+      <td>options</td>
+      <td>Object</td>
+      <td>Used by plugins.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Used to trigger a listener. If explicit is set to true, only a listener that is directly pointing at the specified node will be triggered, hierarchical listeners will not. The options parameter is reserved for use by plugin authors and carries information such as whether the changed value should be persisted.</p>
+<h3 id="static-undoname"><code>static undo(name)</code></h3>
+<table>
+  <thead>
+    <tr>
+      <th>Argument</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>name</td>
+      <td>String</td>
+      <td>The name of the node to be reverted to the previous value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Revert changes to state for the specific name. Note: this honors the hierarchy, so it will navigate through all
+child names and undo any changes below it. So, for example, if you were to call undo('app') and 'app' was the top
+level key in your application, any changes to any child of app will be rewound, 'app.login', 'app.user.role' etc...</p>
+<p>If there is no previous state for the specified value, it will be set to undefined.</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../references/" title="Reference Strings" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Reference Strings
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../plugins/default/" title="Default Plugins" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Default Plugins
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright 2019 Clayton Gulick
+          </div>
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.245445c6.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+    
+  </body>
+</html>
