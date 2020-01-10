@@ -73,7 +73,7 @@ class ApplicationState {
      * @param value
      * @param options object {notify: true, immutable: false, persist: true}
      */
-    static set(name, value, options) {
+    static async set(name, value, options) {
         name = ApplicationState._dereferencePath(name);
         let default_options = {
             //trigger notifications?
@@ -99,7 +99,7 @@ class ApplicationState {
                 ApplicationState._previousState[name].push(previous_value);
         }
         ApplicationState._assignValue(name, value);
-        ApplicationState.notify(name, false, options);
+        await ApplicationState.notify(name, false, options);
     }
 
 
@@ -173,7 +173,7 @@ class ApplicationState {
      * @param target
      * @param object an optional alternate object to operate on instead of ApplicationState._state
      */
-    static rm(target, object) {
+    static async rm(target, object) {
         object = object || ApplicationState._state;
         let original_path = target; //save this for notifications
         if (target === 'app')
@@ -245,7 +245,7 @@ class ApplicationState {
                 //do we want to maintain previous state?
                 save_previous: true
             };
-        ApplicationState.notify(original_path, false, options);
+        await ApplicationState.notify(original_path, false, options);
     }
 
     /**
@@ -367,7 +367,7 @@ class ApplicationState {
      * @param name
      * @param explicit Boolean indicate whether to notify up/down the hierarchy
      */
-    static notify(name, explicit, options) {
+    static async notify(name, explicit, options) {
         if (ApplicationState._disable_notification) return;
 
         /**
@@ -377,13 +377,13 @@ class ApplicationState {
          * @param name the place in the hierachy that's triggering the send
          * @param modified_name the name of the hierarchical key that was actually modified, may be different than `name`
          */
-        function send(listener, name, modified_name) {
+        async function send(listener, name, modified_name) {
             if (options.exclude_notification_listeners.indexOf(listener._listenerKey) >= 0)
                 return;
 
             name = ApplicationState._dereferencePath(name);
             if (ApplicationState._previousState[name]) {
-                return listener(
+                return await listener(
                     ApplicationState._resolvePath(name),
                     ApplicationState._previousState[name][ApplicationState._previousState[name].length - 1],
                     modified_name
@@ -391,14 +391,14 @@ class ApplicationState {
             }
 
             //no previous state, set undefined
-            listener(ApplicationState._resolvePath(name), undefined, modified_name);
+            await listener(ApplicationState._resolvePath(name), undefined, modified_name);
         }
 
         /**
          * If there's a symlink that points to this path, invoke any listeners on the symlink
          * @param name
          */
-        function notifySymlink(name) {
+        async function notifySymlink(name) {
             if (!ApplicationState._symlinks)
                 return;
 
@@ -412,45 +412,45 @@ class ApplicationState {
 
                 const symlink_listeners = ApplicationState._listeners[symlink];
                 for (let listener_index = 0; listener_index < symlink_listeners.lenth; listener_index++) {
-                    send(symlink_listeners[listener_index], symlink);
+                    await send(symlink_listeners[listener_index], symlink);
                 }
             }
         }
 
         //notify listeners up the hierarchy
-        function notifyUp(name) {
+        async function notifyUp(name) {
             const nodes = ApplicationState.walk(name);
             for (let index = 0; index < nodes.length; index++) {
                 const node = nodes[index];
                 if (node.type === "leaf") continue;
-                notifySymlink(node.path);
+                await notifySymlink(node.path);
                 if (options.exclude_notification_paths.indexOf(node.path) >= 0) continue;
 
                 if (ApplicationState._listeners[node.path]) {
                     const listeners = ApplicationState._listeners[node.path];
                     for (let index = 0; index < listeners.length; index++) {
-                        send(listeners[index], node.path, name);
+                        await send(listeners[index], node.path, name);
                     }
                 }
             }
         }
 
         //notify on an explicit name
-        function notifyExplicit(name) {
-            notifySymlink(name);
+        async function notifyExplicit(name) {
+            await notifySymlink(name);
 
             if (!ApplicationState._listeners[name]) return;
             if (options.exclude_notification_paths.indexOf(name) >= 0) return;
 
             const listeners = ApplicationState._listeners[name];
             for (let index = 0; index < listeners.length; index++) {
-                send(listeners[index], name);
+                await send(listeners[index], name);
             }
         }
 
         // recursively notify down the hierarchy
         // This function doesn't just notify down the chain of the string name, it goes across all sub-objects and arrays.
-        function notifyDown(name) {
+        async function notifyDown(name) {
             const obj = ApplicationState._resolvePath(name);
             if (!obj) return;
             if (!(typeof obj === 'object')) return;
@@ -459,46 +459,46 @@ class ApplicationState {
                 const lngth = obj.length;
                 for (let index = 0; index < lngth; index++) {
                     const subname = name + "[" + index + "]";
-                    notifySymlink(subname);
+                    await notifySymlink(subname);
                     if (options.exclude_notification_paths.indexOf(subname) >= 0)
-                        return notifyDown(subname);
+                        return await notifyDown(subname);
 
                     if (ApplicationState._listeners[subname]) {
                         const subname_listeners = ApplicationState._listeners[subname];
                         for (let subname_index = 0; subname_index < subname_listeners.length; subname_index++) {
-                            send(subname_listeners[subname_index], subname, name);
+                            await send(subname_listeners[subname_index], subname, name);
                         }
                     }
 
-                    notifyDown(subname);
+                    await notifyDown(subname);
                 }
             } else {
                 const keys = Object.keys(obj);
                 for (let index = 0; index < keys.length; index++) {
                     const subname = name + "." + keys[index];
-                    notifySymlink(subname);
+                    await notifySymlink(subname);
                     if (options.exclude_notification_paths.indexOf(subname) >= 0)
-                        return notifyDown(subname);
+                        return await notifyDown(subname);
 
                     if (ApplicationState._listeners[subname]) {
                         const listeners = ApplicationState._listeners[subname];
                         for (let subname_index = 0; subname_index < listeners.length; subname_index++) {
-                            send(listeners[subname_index], subname, name);
+                            await send(listeners[subname_index], subname, name);
                         }
                     }
 
-                    notifyDown(subname);
+                    await notifyDown(subname);
                 }
             }
         }
 
         if (!explicit)
-            notifyUp(name);
+            await notifyUp(name);
 
-        notifyExplicit(name);
+        await notifyExplicit(name);
 
         if (!explicit)
-            notifyDown(name);
+            await notifyDown(name);
 
     }
 

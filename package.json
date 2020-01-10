@@ -1,6 +1,6 @@
 {
   "name": "applicationstate",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Utility for maintaining state in an application",
   "main": "index.js",
   "scripts": {

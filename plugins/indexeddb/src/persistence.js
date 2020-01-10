@@ -38,7 +38,7 @@ export class StatePersistence {
      * @param previous_state
      * @param modified_name
      */
-    onAppChange(state, previous_state, modified_name) {
+    async onAppChange(state, previous_state, modified_name) {
         if (ApplicationState._options[modified_name]) {
             let persist = ApplicationState._options[modified_name]['persist'];
             if (!persist)
@@ -62,9 +62,15 @@ export class StatePersistence {
         if (this.operation_queue.length > 1)
             return;
 
-        processQueue.bind(this)();
+        try {
+            await processQueue.bind(this)();
+        }
+        catch(err) {
+            alert("Error saving state: " + JSON.stringify(error));
+            console.trace(error);
+        }
 
-        function processQueue() {
+        async function processQueue() {
             if (this.operation_queue.length == 0)
                 return;
             const item = this.operation_queue[0];
@@ -88,78 +94,53 @@ export class StatePersistence {
             //dexie transactions to work right, so giving up.
 
             //get all the keys and check to see if they contain our path
-            this.db.application_state
-                .toCollection()
-                .primaryKeys()
-                .then(
-                    (primary_keys) => {
-                        for (let i = 0; i < primary_keys.length; i++) {
-                            const key = primary_keys[i];
-                            if (key.indexOf(sub_path) == 0) {
-                                //we need to make sure we're deleting the right stuff here.
-                                //consider the case of setting 'app.location' while we have
-                                //another setting that's 'locationPrevious'
-                                if (key.length > sub_path.length)
-                                    if (key[sub_path.length] != '.')
-                                        continue;
+            let primary_keys = await this.db.application_state.toCollection().primaryKeys();
 
-                                keys_to_remove.push(primary_keys[i]);
-                            }
+            for (let i = 0; i < primary_keys.length; i++) {
+                const key = primary_keys[i];
+                if (key.indexOf(sub_path) == 0) {
+                    //we need to make sure we're deleting the right stuff here.
+                    //consider the case of setting 'app.location' while we have
+                    //another setting that's 'locationPrevious'
+                    if (key.length > sub_path.length)
+                        if (key[sub_path.length] != '.')
+                            continue;
 
-                        }
+                    keys_to_remove.push(primary_keys[i]);
+                }
 
-                        if (keys_to_remove.length)
-                            return this.db.application_state.bulkDelete(keys_to_remove);
-                    }
-                )
-                .then(
-                    () => {
-                        //now do an optimized write
-                        let immutable = ApplicationState._options[full_path] && ApplicationState._options[full_path]['immutable'];
+            }
 
-                        if (typeof value === 'undefined')
-                            return new Promise((resolve, reject) => { resolve(); }); //not doing a write, this must be a deleted key
+            if (keys_to_remove.length)
+                await this.db.application_state.bulkDelete(keys_to_remove);
 
-                        if (value && (typeof value === 'object') && !immutable) {
-                            let flattened = ApplicationState.flatten(value, sub_path);
-                            return this.db.application_state
-                                .bulkPut(flattened)
-                                .then((result) => {
-                                    return result;
-                                })
-                                .catch(
-                                    (err) => {
-                                        alert("Error saving state: " + JSON.stringify(error));
-                                        console.trace(error);
-                                    }
-                                );
-                        }
-                        else {
-                            let serialized_value = JSON.stringify(value);
-                            if (!serialized_value) serialized_value = "";
-                            return this.db.application_state
-                                .put({ key: sub_path, value: serialized_value })
-                                .then((result) => {
-                                    return result;
-                                })
-                                .catch(
-                                    (err) => {
-                                        alert("Error saving state: " + JSON.stringify(error));
-                                        console.trace(error);
-                                    }
-                                );
-                        }
+            //now do an optimized write
+            let immutable = ApplicationState._options[full_path] && ApplicationState._options[full_path]['immutable'];
 
-                    }
-                )
-                .then(() => {
-                    this.operation_queue.shift();
-                    return processQueue.bind(this)();
-                })
-                .catch((error) => {
+            if (value && (typeof value === 'object') && !immutable) {
+                let flattened = ApplicationState.flatten(value, sub_path);
+                try {
+                    await this.db.application_state.bulkPut(flattened);
+                }
+                catch(err) {
                     alert("Error saving state: " + JSON.stringify(error));
                     console.trace(error);
-                });
+                }
+            }
+            else {
+                let serialized_value = JSON.stringify(value);
+                if (!serialized_value) serialized_value = "";
+                try {
+                    await this.db.application_state.put({ key: sub_path, value: serialized_value });
+                }
+                catch(err) {
+                    alert("Error saving state: " + JSON.stringify(error));
+                    console.trace(error);
+                }
+            }
+
+            this.operation_queue.shift();
+            await processQueue.bind(this)();
         }
     };
 }

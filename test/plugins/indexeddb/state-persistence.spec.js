@@ -10,8 +10,8 @@ if (navigator && navigator.appName !== 'Microsoft Internet Explorer') {
     let dexie;
 
     describe('Indexeddb Plugin StatePersistence', function () {
-        before(function () {
-            Dexie.delete('test_db_a');
+        before(async function () {
+            await Dexie.delete('test_db_a');
 
             dexie = new Dexie('test_db_a');
 
@@ -31,9 +31,7 @@ if (navigator && navigator.appName !== 'Microsoft Internet Explorer') {
         it('should write a simple value to indexeddb that can be read by Dexie', async function () {
             await StateLoader.load('test_db_a');
 
-            ApplicationState.set("app.test_1", "test_1");
-
-            await sleep(10);
+            await ApplicationState.set("app.test_1", "test_1");
 
             const result = await dexie.application_state.where({ 'key': 'test_1' }).toArray();
 
@@ -49,9 +47,7 @@ if (navigator && navigator.appName !== 'Microsoft Internet Explorer') {
             this.timeout(5000);
             await StateLoader.load('test_db_a');
 
-            ApplicationState.set("app.sub.doc.test_1", "test_1");
-
-            await sleep(10);
+            await ApplicationState.set("app.sub.doc.test_1", "test_1");
 
             const result = await dexie.application_state.where({ 'key': 'sub.doc.test_1' }).toArray();
 
@@ -66,9 +62,7 @@ if (navigator && navigator.appName !== 'Microsoft Internet Explorer') {
         it('should write an array value to indexeddb', async function () {
             this.timeout(5000);
             await StateLoader.load('test_db_a');
-            ApplicationState.set("app.a.list", [{ "thing": "test" }]);
-
-            await sleep(10);
+            await ApplicationState.set("app.a.list", [{ "thing": "test" }]);
 
             const result = await dexie.application_state.where({ 'key': 'a.list[0].thing' }).toArray();
             expect(result[0]).to.exist;
@@ -78,10 +72,4 @@ if (navigator && navigator.appName !== 'Microsoft Internet Explorer') {
             return true;
         });
     });
-
-    const sleep = (time) => {
-        return new Promise((resolve, reject) => {
-            setTimeout(resolve, time);
-        });
-    }
 }

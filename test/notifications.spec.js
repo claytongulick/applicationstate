@@ -61,10 +61,10 @@ describe('Notifications', function () {
         ApplicationState.removeListener("app.test_2", listener_key);
     });
 
-    it("should notify for a child node", function () {
+    it("should notify for a child node", async function () {
         let current_state, prev_state, expected_count, actual_count = 0;
 
-        const listener_key = ApplicationState.listen("app.test_3.child_node", function (state, previous_state) {
+        const listener_key = ApplicationState.listen("app.test_3.child_node", async function (state, previous_state) {
             expect(state).to.exist;
             if (prev_state) {
                 //
@@ -79,9 +79,9 @@ describe('Notifications', function () {
         });
 
         current_state = "test_3";
-        ApplicationState.set("app.test_3", {});
+        await ApplicationState.set("app.test_3", {});
         expected_count = 1;
-        ApplicationState.set("app.test_3", {
+        await ApplicationState.set("app.test_3", {
             child_node: current_state
         });
 
@@ -89,18 +89,18 @@ describe('Notifications', function () {
 
         // This should not trigger a notification
         expected_count++;
-        ApplicationState.set("app.test_3.child_node_2", "test");
+        await ApplicationState.set("app.test_3.child_node_2", "test");
         expect(expected_count).to.not.equal(actual_count);
 
         ApplicationState.removeListener("app.test_3.child_node", listener_key);
     });
 
-    it("should notify for a child of a child node", function () {
+    it("should notify for a child of a child node", async function () {
         let current_state, expected_count, actual_count = 0;
 
         const listener_key = ApplicationState.listen(
             "app.test_4.child_node.child_child_node",
-            function (state, previous_state) {
+            async function (state, previous_state) {
                 expect(state).to.exist;
                 expect(state).to.equal(current_state);
                 actual_count++;
@@ -110,21 +110,21 @@ describe('Notifications', function () {
         current_state = "test_4.0";
         expected_count = 0;
 
-        ApplicationState.set("app.test_4", {
+        await ApplicationState.set("app.test_4", {
             child_node: {}
         });
 
         // The listener should not have fired, since the node does not exist.
         expect(actual_count).to.equal(expected_count);
 
-        ApplicationState.set("app.test_4.child_node", { child_child_node: current_state });
+        await ApplicationState.set("app.test_4.child_node", { child_child_node: current_state });
 
         // The listener should have fired since the node was created.
         expected_count++;
         expect(actual_count).to.equal(expected_count);
 
         current_state = "test_4.1";
-        ApplicationState.set("app.test_4.child_node", {
+        await ApplicationState.set("app.test_4.child_node", {
             child_child_node: current_state
         });
 
@@ -133,7 +133,7 @@ describe('Notifications', function () {
         expect(actual_count).to.equal(expected_count);
 
         current_state = { test: 123 };
-        ApplicationState.set("app.test_4", {
+        await ApplicationState.set("app.test_4", {
             child_node: {
                 child_child_node: current_state
             }
@@ -148,12 +148,12 @@ describe('Notifications', function () {
         );
     });
 
-    it("should notify the array node when an element is added, changed, or removed", function () {
+    it("should notify the array node when an element is added, changed, or removed", async function () {
         let current_state, expected_count = 0, expected_length = 0, actual_count = 0;
 
         const listener_key = ApplicationState.listen(
             "app.list",
-            function (state, previous_state) {
+            async function (state, previous_state) {
                 expect(state).to.exist;
                 expect(state.length).to.equal(expected_length);
                 expect(actual_count).to.equal(expected_count);
@@ -162,35 +162,35 @@ describe('Notifications', function () {
         );
 
         current_state = [];
-        ApplicationState.set("app.list", current_state);
+        await ApplicationState.set("app.list", current_state);
 
         expected_count++;
         expected_length++;
 
-        ApplicationState.set("app.list[0]", { test: 123 });
+        await ApplicationState.set("app.list[0]", { test: 123 });
 
         expected_count++;
 
-        ApplicationState.set("app.list[0].test", 456);
+        await ApplicationState.set("app.list[0].test", 456);
 
         expected_count++;
 
-        ApplicationState.set("app.list[0].test_2", 123);
-
-        expected_count++;
-        expected_length++;
-
-        ApplicationState.set("app.list[1]", { test: 321 });
+        await ApplicationState.set("app.list[0].test_2", 123);
 
         expected_count++;
         expected_length++;
 
-        ApplicationState.set("app.list[2].test", 654);
+        await ApplicationState.set("app.list[1]", { test: 321 });
+
+        expected_count++;
+        expected_length++;
+
+        await ApplicationState.set("app.list[2].test", 654);
 
         expected_count++;
         expected_length--;
 
-        ApplicationState.rm("app.list[2]");
+        await ApplicationState.rm("app.list[2]");
 
         expected_count++;
 
