@@ -50,6 +50,6 @@
   "browserslist": "> 0.25%, not dead",
   "dependencies": {
     "core-js": "^2.6.9",
-    "dexie": "^2.0.4"
+    "dexie": "^3.2.2"
   }
 }
